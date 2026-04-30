@@ -27,7 +27,8 @@ static void sink_cb(pa_context *c, const pa_sink_info *info, int eol,void *ud) {
 static void event_cb(pa_context *c, pa_subscription_event_type_t t,uint32_t idx, void *ud) {
 	(void)ud;
 	int facility = t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK;
-	if (facility == PA_SUBSCRIPTION_EVENT_SINK) {
+	int type     = t & PA_SUBSCRIPTION_EVENT_TYPE_MASK;
+	if (facility == PA_SUBSCRIPTION_EVENT_SINK && type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 		pa_context_get_sink_info_by_index(c, idx, sink_cb, NULL);
 	}
 }
@@ -38,6 +39,7 @@ static void context_state_cb(pa_context *c, void *ud) {
 		return;
 	pa_context_set_subscribe_callback(c, event_cb, NULL);
 	pa_context_subscribe(c, PA_SUBSCRIPTION_MASK_SINK, NULL, NULL);
+	// pa_context_get_sink_info_by_name(c, "@DEFAULT_SINK@", sink_cb, NULL);
 }
 
 static int initPulseAudio(pa_mainloop_api *api) { //NOLINT
