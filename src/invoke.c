@@ -14,12 +14,12 @@ void showUI(const GUI_ELEMENT element, void *data) {
 					case AUDIO_MUTE:
 						printf("AUDIO_MUTE Slider: min=%.2f, max=%.2f, current=%.2f\n", slider->min, slider->max, slider->current); break;
 					default:
-						printf("Unknown slider\n");break;
+						perror("Unknown slider\n");break;
 				}
 				break;
 			}
 		default:
-			     printf("Unknown GUI element\n");
+			     perror("Unknown GUI element\n");
 			     break;
 	}
 }
