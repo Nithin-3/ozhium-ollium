@@ -30,6 +30,11 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 
 	int argc = 0;
 	while (argv[argc]) argc++;
+	
+	fprintf(stderr, "[commandLineHandler] Received argc=%d\n", argc);
+	for (int i = 0; i < argc; i++) {
+		fprintf(stderr, "[commandLineHandler] argv[%d]='%s'\n", i, argv[i]);
+	}
 
 	ParsedArgs parsed;
 	if (parseArgs(argc, argv, &parsed) != 0) {
@@ -39,6 +44,9 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 	g_strfreev(argv);
 
 	applyArgs(&parsed);
+	
+	fprintf(stderr, "[commandLineHandler] After applyArgs: sliderArgs.min=%.6f, max=%.6f, current=%.6f\n",
+		sliderArgs.min, sliderArgs.max, sliderArgs.current);
 
 	if (globalWindow) {
 		updateContent(elementType, &sliderArgs, &textArgs);
