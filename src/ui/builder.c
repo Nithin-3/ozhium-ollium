@@ -26,20 +26,16 @@ static char *getIconForAction(SLIDER_ACTION action) {
 }
 
 void applySlider(sliderData *s){
-	printf("[APPLY_SLIDER] Called with: current=%.2f, action=%d\n", s->current, s->action);
 	gtk_range_set_value(GTK_RANGE(sliderWidget), (double)s->current);
 	gtk_label_set_text(GTK_LABEL(labelBefore), getIconForAction(s->action));
-	gchar *textBuf = g_strdup_printf("%d%%", (int)(s->current * 100));
+	gchar *textBuf = g_strdup_printf("%d%%", (int)(1<s->current?s->current:s->current * 100));
 	gtk_label_set_text(GTK_LABEL(labelAfter), textBuf);
-	printf("[APPLY_SLIDER] Display: %s\n", textBuf);
 	g_free(textBuf);
 }
 
 void applyText(textData *t){
-	printf("[APPLY_TEXT] Called with: text='%s'\n", t->text);
 	if (textWidget) {
 		gtk_label_set_text(GTK_LABEL(textWidget), t->text);
-		printf("[APPLY_TEXT] Text successfully applied to widget\n");
 	} else {
 		printf("[APPLY_TEXT] WARNING: textWidget is NULL\n");
 	}
@@ -60,12 +56,12 @@ GtkWidget *buildSlider(const sliderData *s) {
 	gtk_widget_set_sensitive(sliderWidget, FALSE);
 
 	
-	// Set minimum size for slider (horizontal: 200px width, vertical: 200px height)
+	// Set minimum size for slider (horizontal: 100px width, vertical: 100px height)
 	if (orient == GTK_ORIENTATION_HORIZONTAL) {
-		gtk_widget_set_size_request(sliderWidget, 200, -1);
+		gtk_widget_set_size_request(sliderWidget, 100, -1);
 		gtk_range_set_inverted(GTK_RANGE(sliderWidget), sliderConfig.invert_dir);
 	} else {
-		gtk_widget_set_size_request(sliderWidget, -1, 200);
+		gtk_widget_set_size_request(sliderWidget, -1, 100);
 		gtk_range_set_inverted(GTK_RANGE(sliderWidget), !sliderConfig.invert_dir);
 	}
 
