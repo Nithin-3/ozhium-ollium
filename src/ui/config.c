@@ -11,6 +11,12 @@ AppConfig appConfig = {
 	.margin = 0,
 };
 
+Icons icons = {
+	.backlight = "",
+	.volume = "",
+	.volumeMute = "󰖁",
+};
+
 void loadConfig(void) {
 	GKeyFile *keyfile = g_key_file_new();
 	GError *error = NULL;
@@ -36,6 +42,13 @@ void loadConfig(void) {
 		appConfig.y = g_key_file_get_integer(keyfile, "osd", "y", NULL);
 	if (g_key_file_has_key(keyfile, "osd", "margin", NULL))
 		appConfig.margin = g_key_file_get_integer(keyfile, "osd", "margin", NULL);
+
+	if (g_key_file_has_key(keyfile, "icons", "backlight", NULL))
+		icons.backlight = g_key_file_get_string(keyfile, "icons", "backlight", NULL);
+	if (g_key_file_has_key(keyfile, "icons", "volume", NULL))
+		icons.volume = g_key_file_get_string(keyfile, "icons", "volume", NULL);
+	if (g_key_file_has_key(keyfile, "icons", "volume-mute", NULL))
+		icons.volumeMute = g_key_file_get_string(keyfile, "icons", "volume-mute", NULL);
 
 	g_key_file_unref(keyfile);
 	free(path);

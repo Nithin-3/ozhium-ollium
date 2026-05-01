@@ -8,7 +8,12 @@ typedef struct {
 	int timeOut, x, y, margin;
 } AppConfig;
 
+typedef struct {
+	char *backlight, *volume,*volumeMute;
+} Icons;
+
 extern AppConfig appConfig;
+extern Icons icons;
 
 void loadConfig(void);
 
