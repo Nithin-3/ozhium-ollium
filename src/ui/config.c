@@ -20,7 +20,9 @@ Icons icons = {
 };
 
 SliderConfig sliderConfig = {
-	.invert_dir=FALSE,
+	.invert_dir = FALSE,
+	.label1 = "#ico#",
+	.label2 = "#val#",
 };
 
 void loadConfig(void) {
@@ -34,6 +36,7 @@ void loadConfig(void) {
 		return;
 	}
 
+	// set appConfig ==========================
 	if (g_key_file_has_key(keyfile, "osd", "vertical-align", NULL)) {
 		gchar *val = g_key_file_get_string(keyfile, "osd", "vertical-align", &error);
 		if (val && (strcmp(val, "top") == 0 || strcmp(val, "center") == 0 || strcmp(val, "bottom") == 0))
@@ -75,18 +78,29 @@ void loadConfig(void) {
 		if (!error && val >= 0)
 			appConfig.margin = val;
 	}
+	// =======================
+
+
+	// set sliderConfig =============================
 	if (g_key_file_has_key(keyfile, "slider", "invert_dir", NULL)) {
 		gboolean val = g_key_file_get_boolean(keyfile, "slider", "invert_dir", &error);
 		if (!error)
 			sliderConfig.invert_dir = val;
 	}
+	if (g_key_file_has_key(keyfile, "slider", "label1", NULL))
+		sliderConfig.label1 = g_key_file_get_string(keyfile, "slider", "label1", &error);
+	if (g_key_file_has_key(keyfile, "slider", "label2", NULL))
+		sliderConfig.label2 = g_key_file_get_string(keyfile, "slider", "label2", &error);
+	// ===============
 
+	// set icons ==========================
 	if (g_key_file_has_key(keyfile, "icons", "backlight", NULL))
 		icons.backlight = g_key_file_get_string(keyfile, "icons", "backlight", &error);
 	if (g_key_file_has_key(keyfile, "icons", "volume", NULL))
 		icons.volume = g_key_file_get_string(keyfile, "icons", "volume", &error);
 	if (g_key_file_has_key(keyfile, "icons", "volume-mute", NULL))
 		icons.volumeMute = g_key_file_get_string(keyfile, "icons", "volume-mute", &error);
+	// ====================
 
 	g_key_file_unref(keyfile);
 }

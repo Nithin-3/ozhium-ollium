@@ -25,11 +25,33 @@ static char *getIconForAction(SLIDER_ACTION action) {
 	}
 }
 
+char *str_replace(const char *src, const char *find, const char *replace) {
+    char *result;
+    const char *pos = strstr(src, find);
+    if (!pos)
+        return strdup(src); // not found, return copy as-is
+
+    size_t find_len    = strlen(find);
+    size_t replace_len = strlen(replace);
+    size_t prefix_len  = pos - src;
+    size_t suffix_len  = strlen(pos + find_len);
+
+    result = malloc(prefix_len + replace_len + suffix_len + 1);
+    if (!result) return NULL;
+
+    memcpy(result, src, prefix_len);
+    memcpy(result + prefix_len, replace, replace_len);
+    memcpy(result + prefix_len + replace_len, pos + find_len, suffix_len + 1); // +1 for '\0'
+
+    return result;
+}
+
 void applySlider(sliderData *s){
+	printf("lable1: %s\nlable2: %s",sliderConfig.label1,sliderConfig.label2);
 	gtk_range_set_value(GTK_RANGE(sliderWidget), (double)s->current);
-	gtk_label_set_text(GTK_LABEL(labelBefore), getIconForAction(s->action));
-	gchar *textBuf = g_strdup_printf("%d%%", (int)(1<s->current?s->current:s->current * 100));
-	gtk_label_set_text(GTK_LABEL(labelAfter), textBuf);
+	gchar *textBuf = g_strdup_printf("%d", (int)(1<s->current?s->current:s->current * 100));
+	gtk_label_set_text(GTK_LABEL(labelBefore), str_replace(str_replace(sliderConfig.label1, "#ico#",getIconForAction(s->action)), "#val#", textBuf));
+	gtk_label_set_text(GTK_LABEL(labelAfter), str_replace(str_replace(sliderConfig.label2, "#ico#",getIconForAction(s->action)), "#val#", textBuf));
 	g_free(textBuf);
 }
 

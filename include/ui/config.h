@@ -15,6 +15,7 @@ typedef struct {
 
 typedef struct{
 	bool invert_dir;
+	char *label1, *label2;
 } SliderConfig;
 
 extern AppConfig appConfig;
