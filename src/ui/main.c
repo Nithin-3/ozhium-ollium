@@ -67,11 +67,6 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 	int argc = 0;
 	while (argv[argc]) argc++;
 	
-	printf("[commandLineHandler] Received argc=%d\n", argc);
-	for (int i = 0; i < argc; i++) {
-		printf("[commandLineHandler] argv[%d]='%s'\n", i, argv[i]);
-	}
-
 	if (parseArgs(argc, argv, &currentArgs) != 0) {
 		g_strfreev(argv);
 		return 1;
@@ -80,10 +75,6 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 
 	elementType = currentArgs.element;
 	
-	printf("[commandLineHandler] Parsed: element=%d, min=%.6f, max=%.6f, current=%.6f, action=%d\n",
-		currentArgs.element, currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action);
-	printf("[commandLineHandler] Passing parsed data directly to updateContent\n");
-
 	if (globalWindow) {
 		// Create proper sliderData and textData from currentArgs
 		sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
