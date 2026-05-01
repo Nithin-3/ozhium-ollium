@@ -2,6 +2,7 @@
 #define UI_CONFIG_H
 
 #include <glib.h>
+#include <stdbool.h>
 
 typedef struct {
 	char *verticalAlign, *horizontalAlign, *orientation;
@@ -12,8 +13,13 @@ typedef struct {
 	char *backlight, *volume,*volumeMute;
 } Icons;
 
+typedef struct{
+	bool invert_dir;
+} SliderConfig;
+
 extern AppConfig appConfig;
 extern Icons icons;
+extern SliderConfig sliderConfig;
 
 void loadConfig(void);
 

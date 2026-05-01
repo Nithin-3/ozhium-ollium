@@ -1,8 +1,9 @@
+#include "invoke.h"
 #include "ui/builder.h"
 #include "ui/config.h"
-#include "invoke.h"
-#include <string.h>
+#include "ui/config.h"
 #include <stdio.h>
+#include <string.h>
 
 static GtkWidget *sliderWidget = NULL;
 static GtkWidget *labelBefore = NULL;
@@ -57,12 +58,15 @@ GtkWidget *buildSlider(const sliderData *s) {
 	gtk_widget_set_hexpand(sliderWidget, TRUE);
 	gtk_widget_set_vexpand(sliderWidget, TRUE);
 	gtk_widget_set_sensitive(sliderWidget, FALSE);
+
 	
 	// Set minimum size for slider (horizontal: 200px width, vertical: 200px height)
 	if (orient == GTK_ORIENTATION_HORIZONTAL) {
 		gtk_widget_set_size_request(sliderWidget, 200, -1);
+		gtk_range_set_inverted(GTK_RANGE(sliderWidget), sliderConfig.invert_dir);
 	} else {
 		gtk_widget_set_size_request(sliderWidget, -1, 200);
+		gtk_range_set_inverted(GTK_RANGE(sliderWidget), !sliderConfig.invert_dir);
 	}
 
 	labelBefore = gtk_label_new("");

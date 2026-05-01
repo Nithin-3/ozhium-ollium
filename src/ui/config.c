@@ -1,4 +1,5 @@
 #include "ui/config.h"
+#include "glibconfig.h"
 #include "tool.h"
 
 AppConfig appConfig = {
@@ -6,8 +7,8 @@ AppConfig appConfig = {
 	.verticalAlign = "top",
 	.orientation = "horizontal",
 	.timeOut = 3,
-	.x = 0,
-	.y = 0,
+	.x = -1,
+	.y = -1,
 	.margin = 0,
 };
 
@@ -15,6 +16,10 @@ Icons icons = {
 	.backlight = "",
 	.volume = "",
 	.volumeMute = "󰖁",
+};
+
+SliderConfig sliderConfig = {
+	.invert_dir=FALSE,
 };
 
 void loadConfig(void) {
@@ -42,6 +47,10 @@ void loadConfig(void) {
 		appConfig.y = g_key_file_get_integer(keyfile, "osd", "y", NULL);
 	if (g_key_file_has_key(keyfile, "osd", "margin", NULL))
 		appConfig.margin = g_key_file_get_integer(keyfile, "osd", "margin", NULL);
+
+	if (g_key_file_has_key(keyfile, "slider", "invert_dir", NULL))
+		icons.backlight = g_key_file_get_string(keyfile, "slider", "invert_dir", NULL);
+
 
 	if (g_key_file_has_key(keyfile, "icons", "backlight", NULL))
 		icons.backlight = g_key_file_get_string(keyfile, "icons", "backlight", NULL);
