@@ -11,12 +11,12 @@ char *findConfigPath(const char *filename) {
 	const char *home = getenv("HOME");
 
 	if (home) {
-		snprintf(path, PATH_MAX, "%s/.config/echo-meter/%s", home, filename);
+		snprintf(path, PATH_MAX, "%s/.config/ozhium-ollium/%s", home, filename);
 		if (access(path, R_OK) == 0)
 			return path;
 	}
 
-	snprintf(path, PATH_MAX, "/usr/share/echo-meter/%s", filename);
+	snprintf(path, PATH_MAX, "/usr/share/ozhium-ollium/%s", filename);
 	if (access(path, R_OK) == 0)
 		return path;
 
