@@ -9,5 +9,6 @@ extern textData textArgs;
 
 GtkWidget *buildSlider(void);
 GtkWidget *buildText(void);
+void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t);
 
 #endif

@@ -4,7 +4,7 @@
 #include <gtk4-layer-shell/gtk4-layer-shell.h>
 #include <string.h>
 
-static GtkWidget *globalWindow = NULL;
+GtkWidget *globalWindow = NULL;
 static guint timeoutId = 0;
 
 static gboolean onClose(gpointer data) {
