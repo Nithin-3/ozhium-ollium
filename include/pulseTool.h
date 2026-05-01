@@ -21,7 +21,7 @@ static void sink_cb(pa_context *c, const pa_sink_info *info, int eol,void *ud) {
 		.current=current,
 		.action=muted ? AUDIO_MUTE : AUDIO,
 	};
-	showUI(SLIDER, &s);
+	execUI(SLIDER, &s);
 }
 
 static void event_cb(pa_context *c, pa_subscription_event_type_t t,uint32_t idx, void *ud) {

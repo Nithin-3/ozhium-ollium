@@ -20,7 +20,7 @@ static void backlight_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_eve
 		if (ev->mask & IN_MODIFY) {
 			sliderData slider;
 			float bri = getBacklight(&slider);
-			if (bri >= 0) showUI(SLIDER, &slider);
+			if (bri >= 0) execUI(SLIDER, &slider);
 		}
 		p += sizeof(struct inotify_event) + ev->len;
 	}
