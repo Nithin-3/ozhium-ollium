@@ -2,6 +2,7 @@
 #include "ui/config.h"
 #include "tool.h"
 #include <gtk4-layer-shell/gtk4-layer-shell.h>
+#include <stdio.h>
 #include <string.h>
 
 GtkWidget *globalWindow = NULL;
@@ -31,25 +32,33 @@ void applyLayerShell(GtkWindow *win) {
 		gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_TOP, appConfig.y);
 		gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_LEFT, appConfig.x);
 	} else {
+		// Vertical alignment
 		if (strcmp(appConfig.verticalAlign, "center") == 0) {
+			// gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+			// gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
+		} else if (strcmp(appConfig.verticalAlign, "top") == 0) {
 			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_BOTTOM, FALSE);
+			gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_TOP, appConfig.margin);
+		} else if (strcmp(appConfig.verticalAlign, "bottom") == 0) {
+			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_TOP, FALSE);
 			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
-		} else {
-			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_TOP, strcmp(appConfig.verticalAlign, "top") == 0);
-			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_BOTTOM, strcmp(appConfig.verticalAlign, "bottom") == 0);
+			gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_BOTTOM, appConfig.margin);
 		}
 
+		// Horizontal alignment
 		if (strcmp(appConfig.horizontalAlign, "center") == 0) {
+			// gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+			// gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
+		} else if (strcmp(appConfig.horizontalAlign, "left") == 0) {
 			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_RIGHT, FALSE);
+			gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_LEFT, appConfig.margin);
+		} else if (strcmp(appConfig.horizontalAlign, "right") == 0) {
+			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_LEFT, FALSE);
 			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
-		} else {
-			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_LEFT, strcmp(appConfig.horizontalAlign, "left") == 0);
-			gtk_layer_set_anchor(win, GTK_LAYER_SHELL_EDGE_RIGHT, strcmp(appConfig.horizontalAlign, "right") == 0);
+			gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_RIGHT, appConfig.margin);
 		}
-		gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_TOP, appConfig.margin);
-		gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_BOTTOM, appConfig.margin);
-		gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_LEFT, appConfig.margin);
-		gtk_layer_set_margin(win, GTK_LAYER_SHELL_EDGE_RIGHT, appConfig.margin);
 	}
 }
 
