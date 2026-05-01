@@ -4,11 +4,8 @@
 #include "invoke.h"
 #include <gtk/gtk.h>
 
-extern sliderData sliderArgs;
-extern textData textArgs;
-
-GtkWidget *buildSlider(void);
-GtkWidget *buildText(void);
+GtkWidget *buildSlider(const sliderData *s);
+GtkWidget *buildText(const textData *t);
 void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t);
 
 #endif

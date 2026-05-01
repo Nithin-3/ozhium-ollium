@@ -4,14 +4,10 @@
 #include <string.h>
 #include <stdio.h>
 
-sliderData sliderArgs;
-textData textArgs;
-
 static GtkWidget *sliderWidget = NULL;
 static GtkWidget *labelBefore = NULL;
 static GtkWidget *labelAfter = NULL;
 static GtkWidget *textWidget = NULL;
-
 
 
 static char *getIconForAction(SLIDER_ACTION action) {
@@ -29,7 +25,7 @@ static char *getIconForAction(SLIDER_ACTION action) {
 }
 
 void applySlider(sliderData *s){
-	printf("[APPLY_SLIDER] Updating slider: current=%.2f, action=%d\n", s->current, s->action);
+	printf("[APPLY_SLIDER] Called with: current=%.2f, action=%d\n", s->current, s->action);
 	gtk_range_set_value(GTK_RANGE(sliderWidget), (double)s->current);
 	gtk_label_set_text(GTK_LABEL(labelBefore), getIconForAction(s->action));
 	gchar *textBuf = g_strdup_printf("%d%%", (int)(s->current * 100));
@@ -39,7 +35,7 @@ void applySlider(sliderData *s){
 }
 
 void applyText(textData *t){
-	printf("[APPLY_TEXT] Updating text widget: text='%s'\n", t->text);
+	printf("[APPLY_TEXT] Called with: text='%s'\n", t->text);
 	if (textWidget) {
 		gtk_label_set_text(GTK_LABEL(textWidget), t->text);
 		printf("[APPLY_TEXT] Text successfully applied to widget\n");
@@ -48,12 +44,14 @@ void applyText(textData *t){
 	}
 }
 
-GtkWidget *buildSlider(void) {
+GtkWidget *buildSlider(const sliderData *s) {
+	printf("[buildSlider] Called with: min=%.2f, max=%.2f, current=%.2f, action=%d\n", s->min, s->max, s->current, s->action);
+	
 	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
 	if (strcmp(appConfig.orientation, "vertical") == 0)
 		orient = GTK_ORIENTATION_VERTICAL;
 
-	sliderWidget = gtk_scale_new_with_range(orient, (double)sliderArgs.min, (double)sliderArgs.max, (double)(sliderArgs.max / 100.0));
+	sliderWidget = gtk_scale_new_with_range(orient, (double)s->min, (double)s->max, (double)(s->max / 100.0));
 	gtk_scale_set_draw_value(GTK_SCALE(sliderWidget), FALSE);
 	gtk_widget_set_name(sliderWidget, "slider");
 	gtk_widget_set_hexpand(sliderWidget, TRUE);
@@ -72,7 +70,9 @@ GtkWidget *buildSlider(void) {
 	gtk_widget_set_name(labelBefore, "slider-label-before");
 	gtk_widget_set_name(labelAfter, "slider-label-after");
 
-	applySlider(&sliderArgs);
+	// Apply initial values
+	sliderData *mutableSlider = (sliderData *)s;
+	applySlider(mutableSlider);
 
 	GtkWidget *box = gtk_box_new(orient, 6);
 	
@@ -88,8 +88,10 @@ GtkWidget *buildSlider(void) {
 	return box;
 }
 
-GtkWidget *buildText(void) {
-	textWidget = gtk_label_new(textArgs.text);
+GtkWidget *buildText(const textData *t) {
+	printf("[buildText] Called with: text='%s'\n", t->text);
+	
+	textWidget = gtk_label_new(t->text);
 	gtk_widget_set_name(textWidget, "text");
 	gtk_label_set_xalign(GTK_LABEL(textWidget), 0.5);
 	gtk_label_set_yalign(GTK_LABEL(textWidget), 0.5);
@@ -106,22 +108,13 @@ GtkWidget *buildText(void) {
 }
 
 void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t) {
+	printf("[updateContent] Called with element=%d\n", el);
+	
 	switch (el) {
 		case SLIDER:
 			if (sliderWidget) {
-				printf("[UPDATE] SLIDER element incoming: min=%.2f, max=%.2f, current=%.2f, action=%d\n", 
+				printf("[updateContent] SLIDER: min=%.2f, max=%.2f, current=%.2f, action=%d\n", 
 					s->min, s->max, s->current, s->action);
-				printf("[UPDATE] SLIDER global sliderArgs BEFORE: min=%.2f, max=%.2f, current=%.2f, action=%d\n", 
-					sliderArgs.min, sliderArgs.max, sliderArgs.current, sliderArgs.action);
-				
-				// Update global sliderArgs with incoming values
-				sliderArgs.min = s->min;
-				sliderArgs.max = s->max;
-				sliderArgs.current = s->current;
-				sliderArgs.action = s->action;
-				
-				printf("[UPDATE] SLIDER global sliderArgs AFTER: min=%.2f, max=%.2f, current=%.2f, action=%d\n", 
-					sliderArgs.min, sliderArgs.max, sliderArgs.current, sliderArgs.action);
 				
 				sliderData *mutableSlider = (sliderData *)s;
 				applySlider(mutableSlider);
@@ -129,10 +122,7 @@ void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t) {
 			break;
 		case TEXT:
 			if (textWidget) {
-				printf("[UPDATE] TEXT element incoming: text='%s'\n", t->text);
-				strncpy(textArgs.text, t->text, sizeof(textArgs.text) - 1);
-				textArgs.text[sizeof(textArgs.text) - 1] = '\0';
-				printf("[UPDATE] TEXT global textArgs AFTER: text='%s'\n", textArgs.text);
+				printf("[updateContent] TEXT: text='%s'\n", t->text);
 				
 				textData *mutableText = (textData *)t;
 				applyText(mutableText);
