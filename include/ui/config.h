@@ -10,7 +10,7 @@ typedef struct {
 } AppConfig;
 
 typedef struct {
-	char *backlight, *volume,*volumeMute;
+	char *backlight, *volume, *volumeMute, *mic, *micMute;
 } Icons;
 
 typedef struct{

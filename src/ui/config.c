@@ -17,6 +17,8 @@ Icons icons = {
 	.backlight = "",
 	.volume = "",
 	.volumeMute = "󰖁",
+	.mic = "󰍬",
+	.micMute = "",
 };
 
 SliderConfig sliderConfig = {
@@ -100,6 +102,10 @@ void loadConfig(void) {
 		icons.volume = g_key_file_get_string(keyfile, "icons", "volume", &error);
 	if (g_key_file_has_key(keyfile, "icons", "volume-mute", NULL))
 		icons.volumeMute = g_key_file_get_string(keyfile, "icons", "volume-mute", &error);
+	if (g_key_file_has_key(keyfile, "icons", "mic", NULL))
+		icons.mic = g_key_file_get_string(keyfile, "icons", "mic", &error);
+	if (g_key_file_has_key(keyfile, "icons", "mic-mute", NULL))
+		icons.micMute = g_key_file_get_string(keyfile, "icons", "mic-mute", &error);
 	// ====================
 
 	g_key_file_unref(keyfile);

@@ -26,18 +26,29 @@ static void initSigchld(void) {
 
 static const char *actionToString(SLIDER_ACTION a) {
 	switch (a) {
-		case BACKLIGHT:    return "0";
-		case AUDIO:        return "1";
-		case AUDIO_MUTE:   return "2";
-		default:           return "0";
+		case BACKLIGHT:
+			return "0";
+		case AUDIO:
+			return "1";
+		case AUDIO_MUTE:
+			return "2";
+		case MIC:
+			return "3";
+		case MIC_MUTE:
+			return "4";
+		default:
+			return "0";
 	}
 }
 
 static const char *elementToString(GUI_ELEMENT e) {
 	switch (e) {
-		case SLIDER: return "0";
-		case TEXT:   return "1";
-		default:     return "0";
+		case SLIDER:
+			return "0";
+		case TEXT:
+			return "1";
+		default:
+			return "0";
 	}
 }
 
@@ -62,40 +73,35 @@ void execUI(const GUI_ELEMENT element, void *data) {
 	if (pid == 0) {
 		switch (element) {
 			case SLIDER: {
-				sliderData *s = (sliderData *)data;
-				fprintf(stderr, "[execUI child] SLIDER: min=%.2f max=%.2f current=%.2f action=%d\n", s->min, s->max, s->current, s->action);
-				char minBuf[64], maxBuf[64], curBuf[64], actionBuf[8];
-				snprintf(minBuf, sizeof(minBuf), "%.6f", s->min);
-				snprintf(maxBuf, sizeof(maxBuf), "%.6f", s->max);
-				snprintf(curBuf, sizeof(curBuf), "%.6f", s->current);
-				strncpy(actionBuf, actionToString(s->action), sizeof(actionBuf));
+					     sliderData *s = (sliderData *)data;
+					     fprintf(
+							     stderr,
+							     "[execUI child] SLIDER: min=%.2f max=%.2f current=%.2f action=%d\n",
+							     s->min, s->max, s->current, s->action);
+					     char minBuf[64], maxBuf[64], curBuf[64], actionBuf[8];
+					     snprintf(minBuf, sizeof(minBuf), "%.6f", s->min);
+					     snprintf(maxBuf, sizeof(maxBuf), "%.6f", s->max);
+					     snprintf(curBuf, sizeof(curBuf), "%.6f", s->current);
+					     strncpy(actionBuf, actionToString(s->action), sizeof(actionBuf));
 
-				char *args[] = {
-					uiBinary,
-					"--element", elementBuf,
-					"--min", minBuf,
-					"--max", maxBuf,
-					"--current", curBuf,
-					"--action", actionBuf,
-					NULL
-				};
-				fprintf(stderr, "[execUI execv] Command: %s --element %s --min %s --max %s --current %s --action %s\n",
-					uiBinary, elementBuf, minBuf, maxBuf, curBuf, actionBuf);
-				execv(uiBinary, args);
-				break;
-			}
+					     char *args[] = {uiBinary, "--element", elementBuf, "--min",
+						     minBuf,   "--max",     maxBuf,     "--current",
+						     curBuf,   "--action",  actionBuf,  NULL};
+					     fprintf(stderr,
+							     "[execUI execv] Command: %s --element %s --min %s --max %s "
+							     "--current %s --action %s\n",
+							     uiBinary, elementBuf, minBuf, maxBuf, curBuf, actionBuf);
+					     execv(uiBinary, args);
+					     break;
+				     }
 			case TEXT: {
-				textData *t = (textData *)data;
-				fprintf(stderr, "[execUI child] TEXT: text=%s\n", t->text);
-				char *args[] = {
-					uiBinary,
-					"--element", elementBuf,
-					"--text", t->text,
-					NULL
-				};
-				execv(uiBinary, args);
-				break;
-			}
+					   textData *t = (textData *)data;
+					   fprintf(stderr, "[execUI child] TEXT: text=%s\n", t->text);
+					   char *args[] = {uiBinary, "--element", elementBuf,
+						   "--text", t->text,     NULL};
+					   execv(uiBinary, args);
+					   break;
+				   }
 		}
 		perror("execv ozhium-ollium-ui");
 		_exit(1);

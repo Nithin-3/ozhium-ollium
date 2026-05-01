@@ -2,7 +2,7 @@
 #define INVOKE_H
 
 typedef enum { SLIDER, TEXT } GUI_ELEMENT;
-typedef enum { BACKLIGHT, AUDIO, AUDIO_MUTE } SLIDER_ACTION;
+typedef enum { BACKLIGHT, AUDIO, AUDIO_MUTE, MIC, MIC_MUTE } SLIDER_ACTION;
 
 typedef struct {
 	float min;

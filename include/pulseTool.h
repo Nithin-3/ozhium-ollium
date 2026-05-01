@@ -24,12 +24,32 @@ static void sink_cb(pa_context *c, const pa_sink_info *info, int eol,void *ud) {
 	execUI(SLIDER, &s);
 }
 
+static void source_cb(pa_context *c, const pa_source_info *info, int eol, void *ud) {
+	(void)c;
+	(void)ud;
+	if (eol > 0)
+		return;
+	pa_volume_t vol = pa_cvolume_avg(&info->volume);
+	float current = (float)vol / PA_VOLUME_NORM;
+	int muted = info->mute;
+	sliderData s = {
+		.min=0,
+		.max=1,
+		.current=current,
+		.action=muted ? MIC_MUTE : MIC,
+	};
+	execUI(SLIDER, &s);
+}
+
 static void event_cb(pa_context *c, pa_subscription_event_type_t t,uint32_t idx, void *ud) {
 	(void)ud;
 	int facility = t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK;
 	int type     = t & PA_SUBSCRIPTION_EVENT_TYPE_MASK;
 	if (facility == PA_SUBSCRIPTION_EVENT_SINK && type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 		pa_context_get_sink_info_by_index(c, idx, sink_cb, NULL);
+	}
+	if (facility == PA_SUBSCRIPTION_EVENT_SOURCE && type == PA_SUBSCRIPTION_EVENT_CHANGE) {
+		pa_context_get_source_info_by_index(c, idx, source_cb, NULL);
 	}
 }
 
@@ -38,8 +58,7 @@ static void context_state_cb(pa_context *c, void *ud) {
 	if (pa_context_get_state(c) != PA_CONTEXT_READY)
 		return;
 	pa_context_set_subscribe_callback(c, event_cb, NULL);
-	pa_context_subscribe(c, PA_SUBSCRIPTION_MASK_SINK, NULL, NULL);
-	// pa_context_get_sink_info_by_name(c, "@DEFAULT_SINK@", sink_cb, NULL);
+	pa_context_subscribe(c, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL);
 }
 
 static int initPulseAudio(pa_mainloop_api *api) { //NOLINT

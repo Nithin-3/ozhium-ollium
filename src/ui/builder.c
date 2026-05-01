@@ -17,9 +17,12 @@ static char *getIconForAction(SLIDER_ACTION action) {
 			return icons.backlight;
 		case AUDIO:
 			return icons.volume;
-			break;
 		case AUDIO_MUTE:
 			return icons.volumeMute;
+		case MIC:
+			return icons.mic;
+		case MIC_MUTE:
+			return icons.micMute;
 		default:
 			return icons.backlight;
 	}
