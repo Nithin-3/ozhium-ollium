@@ -51,5 +51,4 @@ void loadConfig(void) {
 		icons.volumeMute = g_key_file_get_string(keyfile, "icons", "volume-mute", NULL);
 
 	g_key_file_unref(keyfile);
-	free(path);
 }
