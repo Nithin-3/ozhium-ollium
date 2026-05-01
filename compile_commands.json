@@ -1,1 +1,0 @@
-[{"directory": "/home/ninja/tools/ozhium-ollium", "command": "gcc -Wall -Wextra -I include -c src/ozhium-ollium.c -o src/ozhium-ollium.o", "file": "src/ozhium-ollium.c"}]
