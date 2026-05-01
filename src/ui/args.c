@@ -2,6 +2,7 @@
 #include "invoke.h"
 #include <getopt.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 int parseArgs(int argc, char *argv[], ParsedArgs *args) {
 	args->element = SLIDER;
@@ -10,6 +11,14 @@ int parseArgs(int argc, char *argv[], ParsedArgs *args) {
 	args->current = 50;
 	args->action = BACKLIGHT;
 	args->text = "";
+
+	fprintf(stderr, "[parseArgs] argc=%d\n", argc);
+	for (int i = 0; i < argc; i++) {
+		fprintf(stderr, "[parseArgs] argv[%d]='%s'\n", i, argv[i]);
+	}
+
+	// Reset getopt_long internal state for multiple invocations
+	optind = 1;
 
 	static struct option longOpts[] = {
 		{ "element", required_argument, NULL, 'e' },
@@ -33,5 +42,8 @@ int parseArgs(int argc, char *argv[], ParsedArgs *args) {
 			default: return 1;
 		}
 	}
+	
+	fprintf(stderr, "[parseArgs] PARSED: element=%d, min=%.6f, max=%.6f, current=%.6f, action=%d, text='%s'\n", args->element, args->min, args->max, args->current, args->action, args->text);
+	
 	return 0;
 }
