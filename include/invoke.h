@@ -1,19 +1,7 @@
 #ifndef INVOKE_H
 #define INVOKE_H
 
-typedef enum { SLIDER, TEXT } GUI_ELEMENT;
-typedef enum { BACKLIGHT, AUDIO, AUDIO_MUTE, MIC, MIC_MUTE } SLIDER_ACTION;
-
-typedef struct {
-	float min;
-	float max;
-	float current;
-	SLIDER_ACTION action;
-} sliderData;
-
-typedef struct {
-	char text[256];
-} textData;
+#include "common.h"
 
 void execUI(const GUI_ELEMENT element, void *data);
 

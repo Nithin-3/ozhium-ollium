@@ -1,7 +1,7 @@
 #ifndef UI_BUILDER_H
 #define UI_BUILDER_H
 
-#include "invoke.h"
+#include "common.h"
 #include <gtk/gtk.h>
 
 GtkWidget *buildSlider(const sliderData *s);

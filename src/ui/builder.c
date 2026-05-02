@@ -1,4 +1,3 @@
-#include "invoke.h"
 #include "ui/builder.h"
 #include "ui/config.h"
 #include "ui/config.h"
@@ -50,7 +49,6 @@ char *str_replace(const char *src, const char *find, const char *replace) {
 }
 
 void applySlider(sliderData *s){
-	printf("lable1: %s\nlable2: %s",sliderConfig.label1,sliderConfig.label2);
 	gtk_range_set_value(GTK_RANGE(sliderWidget), (double)s->current);
 	gchar *textBuf = g_strdup_printf("%d", (int)(1<s->current?s->current:s->current * 100));
 	gtk_label_set_text(GTK_LABEL(labelBefore), str_replace(str_replace(sliderConfig.label1, "#ico#",getIconForAction(s->action)), "#val#", textBuf));
