@@ -63,7 +63,8 @@ int parseArgs(int argc, char *argv[], ParsedArgs *args) {
 				}
 				break;
 			case 't':
-				args->text = optarg;
+				strncpy(args->text, optarg, sizeof(args->text) - 1);
+				args->text[sizeof(args->text) - 1] = '\0';
 				break;
 			default:
 				return 1;

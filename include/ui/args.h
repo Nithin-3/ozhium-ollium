@@ -10,7 +10,7 @@ typedef struct {
 		SLIDER_ACTION slider;
 		TEXT_ACTION text;
 	} action;
-	char *text;
+	char text[256];
 } ParsedArgs;
 
 GUI_ELEMENT argToElement(const char *s);
