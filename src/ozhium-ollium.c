@@ -14,6 +14,7 @@
 
 int bri_wd=0;
 static struct udev_monitor *udev_mon = NULL;
+static char prev_bat_status[32] = {0};
 
 static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api;
@@ -53,12 +54,16 @@ static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_fl
 	const char *status = udev_device_get_sysattr_value(dev, "status");
 	if (action && (0 == strcmp(action, "change") || 0 == strcmp(action, "update"))) {
 
-		char buff[32];
-		if (!catFileStr(batSta_path, buff, sizeof(buff))) return;
-		if (0 == strcmp(status, buff)) return;
+		if (prev_bat_status[0] != '\0' && 0 == strcmp(status, prev_bat_status)) {
+			udev_device_unref(dev);
+			return;
+		}
+
+		strncpy(prev_bat_status, status, sizeof(prev_bat_status) - 1);
+		prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
+
 		textData t = {0};
 		getBattery(&t);
-
 		execUI(TEXT, &t);
 	}
         udev_device_unref(dev);
