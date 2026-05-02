@@ -13,6 +13,7 @@
 
 int bri_wd=0;
 static struct udev_monitor *udev_mon = NULL;
+static char lastStatus[32] = {0};
 
 static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api;
@@ -49,14 +50,22 @@ static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_fl
 	}
 
 	const char *action = udev_device_get_action(dev);
-	const char *status = udev_device_get_sysattr_value(dev, "status");
-	const char *cap_str = udev_device_get_sysattr_value(dev, "capacity");
 
 	if (action && (strcmp(action, "change") == 0 || strcmp(action, "update") == 0)) {
+		const char *status = udev_device_get_sysattr_value(dev, "status");
+		const char *cap_str = udev_device_get_sysattr_value(dev, "capacity");
+		int cap = cap_str ? atoi(cap_str) : 0;
+
+		if (status && strcmp(status, lastStatus) == 0) {
+			udev_device_unref(dev);
+			return;
+		}
+
+		if (status) strncpy(lastStatus, status, sizeof(lastStatus) - 1);
+
 		fprintf(stderr, "[udev] battery change: action=%s status=%s cap=%s\n", action, status ? status : "null", cap_str ? cap_str : "null");
 
 		textData t = {0};
-		int cap = cap_str ? atoi(cap_str) : 0;
 		snprintf(t.text, sizeof(t.text), "%d", cap);
 
 		if (status && strcmp(status, "Charging") == 0) t.action = BAT_CHARGE;
