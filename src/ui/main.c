@@ -33,7 +33,7 @@ static void onActivate(GtkApplication *app, gpointer data) {
 		case TEXT: {
 			printf("[onActivate] Building text with passed data\n");
 			textData t;
-			strncpy(t.text, currentArgs.text ? currentArgs.text : "", sizeof(t.text) - 1);
+			strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
 			t.text[sizeof(t.text) - 1] = '\0';
 			t.action = currentArgs.action.text;
 			box = buildText(&t);
@@ -75,7 +75,7 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 	if (globalWindow) {
 		sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action.slider};
 		textData t;
-		strncpy(t.text, currentArgs.text ? currentArgs.text : "", sizeof(t.text) - 1);
+		strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
 		t.text[sizeof(t.text) - 1] = '\0';
 		t.action = currentArgs.action.text;
 		

@@ -19,9 +19,14 @@ typedef struct{
 	char *label1, *label2;
 } SliderConfig;
 
+typedef struct{
+	char *label;
+} TextConfig;
+
 extern AppConfig appConfig;
 extern Icons icons;
 extern SliderConfig sliderConfig;
+extern TextConfig textConfig;
 
 void loadConfig(void);
 

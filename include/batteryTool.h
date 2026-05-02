@@ -21,7 +21,7 @@ static int getBattery(textData *t) { // NOLINT
 	if (!catFile(batCap_path, &cap)) return 1;
 	if (!catFileStr(batSta_path, buff, sizeof(buff))) return 1;
 
-	snprintf(t->text, sizeof(t->text), "%d", cap);
+	snprintf(t->text, sizeof(t->text), "%d%%", cap);
 
 	if (strcmp(buff, "Charging") == 0) t->action = BAT_CHARGE;
 	else if (strcmp(buff, "Discharging") == 0) t->action = BAT_DISCHARGE;

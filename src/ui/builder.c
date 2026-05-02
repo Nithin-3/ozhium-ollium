@@ -75,10 +75,7 @@ void applySlider(sliderData *s){
 
 void applyText(textData *t){
 	if (textWidget) {
-		char *icon = getIconForTextAction(t->action);
-		char labelText[512];
-		snprintf(labelText, sizeof(labelText), "%s %s", icon ? icon : "", t->text);
-		gtk_label_set_text(GTK_LABEL(textWidget), labelText);
+		gtk_label_set_text(GTK_LABEL(textWidget), str_replace(str_replace(textConfig.label, "#ico#", getIconForTextAction(t->action)), "#val#", t->text));
 	} else {
 		printf("[APPLY_TEXT] WARNING: textWidget is NULL\n");
 	}

@@ -32,6 +32,10 @@ SliderConfig sliderConfig = {
 	.label2 = "#val#",
 };
 
+TextConfig textConfig = {
+	.label = "#ico# #val#",
+};
+
 void loadConfig(void) {
 	GKeyFile *keyfile = g_key_file_new();
 	GError *error = NULL;
@@ -99,6 +103,12 @@ void loadConfig(void) {
 	if (g_key_file_has_key(keyfile, "slider", "label2", NULL))
 		sliderConfig.label2 = g_key_file_get_string(keyfile, "slider", "label2", &error);
 	// ===============
+	// set textConfig ====================
+	
+	if (g_key_file_has_key(keyfile, "text", "label", NULL))
+		textConfig.label = g_key_file_get_string(keyfile, "text", "label", &error);
+
+	//=============================
 
 	// set icons ==========================
 	if (g_key_file_has_key(keyfile, "icons", "backlight", NULL))
