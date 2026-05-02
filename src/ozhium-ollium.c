@@ -1,13 +1,20 @@
 #include "backLightTool.h"
 #include "invoke.h"
 #include "pulseTool.h"
+#include "tool.h"
 #include <dirent.h>
+#include <libudev.h>
 #include <linux/limits.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/inotify.h>
 #include <unistd.h>
 
-static void backlight_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
+
+int bri_wd=0;
+static struct udev_monitor *udev_mon = NULL;
+
+static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api;
 	(void)e;
 	(void)ud;
@@ -18,12 +25,49 @@ static void backlight_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_eve
 	for (char *p = buf; p < buf + len; ) {
 		struct inotify_event *ev = (struct inotify_event *)p;
 		if (ev->mask & IN_MODIFY) {
-			sliderData slider;
-			float bri = getBacklight(&slider);
-			if (bri >= 0) execUI(SLIDER, &slider);
+			if (ev->wd == bri_wd) {
+				sliderData slider;
+				if (0 == getBacklight(&slider)) execUI(SLIDER, &slider);
+			}
 		}
 		p += sizeof(struct inotify_event) + ev->len;
 	}
+}
+
+static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
+	(void)api; (void)e; (void)fd; (void)events; (void)ud;
+
+	if (!(events & PA_IO_EVENT_INPUT)) return;
+
+	struct udev_device *dev = udev_monitor_receive_device(udev_mon);
+	if (!dev) return;
+
+	const char *power_type = udev_device_get_property_value(dev, "POWER_SUPPLY_TYPE");
+	if (!power_type || strcmp(power_type, "Battery") != 0) {
+		udev_device_unref(dev);
+		return;
+	}
+
+	const char *action = udev_device_get_action(dev);
+	const char *status = udev_device_get_sysattr_value(dev, "status");
+	const char *cap_str = udev_device_get_sysattr_value(dev, "capacity");
+
+	if (action && (strcmp(action, "change") == 0 || strcmp(action, "update") == 0)) {
+		fprintf(stderr, "[udev] battery change: action=%s status=%s cap=%s\n", action, status ? status : "null", cap_str ? cap_str : "null");
+
+		textData t = {0};
+		int cap = cap_str ? atoi(cap_str) : 0;
+		snprintf(t.text, sizeof(t.text), "%d", cap);
+
+		if (status && strcmp(status, "Charging") == 0) t.action = BAT_CHARGE;
+		else if (status && strcmp(status, "Discharging") == 0) t.action = BAT_DISCHARGE;
+		else if (status && strcmp(status, "Full") == 0) t.action = BAT_FULL;
+		else if (cap < 21) t.action = BAT_LOW;
+		else t.action = BAT_IDEL;
+
+		execUI(TEXT, &t);
+	}
+	udev_device_unref(dev);
 }
 
 int main() {
@@ -40,9 +84,25 @@ int main() {
 
 	int in_fd = inotify_init();
 	if (in_fd < 0) { perror("inotify init"); pa_mainloop_free(ml); return 1; }
-	int wd = inotify_add_watch(in_fd, bri_path, IN_MODIFY);
-	if (wd < 0) { perror("inotify watch"); close(in_fd); pa_mainloop_free(ml); return 1; }
-	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, backlight_cb, NULL);
+	bri_wd = inotify_add_watch(in_fd, bri_path, IN_MODIFY);
+	if (bri_wd < 0) { perror("inotify watch"); close(in_fd); pa_mainloop_free(ml); return 1; }
+	printf("[inotify watch] path : %s\n", bri_path);
+
+	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotify_cb, NULL);
+
+	struct udev *udev = udev_new();
+	if (!udev) { fprintf(stderr, "Failed to create udev\n"); }
+	else {
+		udev_mon = udev_monitor_new_from_netlink(udev, "kernel");
+		if (udev_mon) {
+			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "power_supply", NULL);
+			udev_monitor_enable_receiving(udev_mon);
+			int udev_fd = udev_monitor_get_fd(udev_mon);
+			printf("[udev] monitoring power_supply\n");
+			api->io_new(api, udev_fd, PA_IO_EVENT_INPUT, udev_cb, NULL);
+		}
+	}
+
 
 	if (initPulseAudio(api) != 0) {
 		fprintf(stderr, "Failed to init PulseAudio\n");
@@ -51,11 +111,13 @@ int main() {
 		return 1;
 	}
 
-	printf("Watching audio + backlight changes... (Ctrl+C to exit)\n");
+	printf("watch pulse srink source\n(Ctrl+C to exit)\n");
 	pa_mainloop_run(ml, NULL);
 
 	if (pa_ctx) pa_context_unref(pa_ctx);
 	close(in_fd);
+	if (udev_mon) udev_monitor_unref(udev_mon);
+	if (udev) udev_unref(udev);
 	pa_mainloop_free(ml);
 	return 0;
 }

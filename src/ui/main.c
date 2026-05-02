@@ -14,8 +14,6 @@ static void onActivate(GtkApplication *app, gpointer data) {
 	(void)data;
 
 	printf("[onActivate] Called with elementType=%d\n", elementType);
-	printf("[onActivate] currentArgs: min=%.2f, max=%.2f, current=%.2f, action=%d, text='%s'\n",
-		currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action, currentArgs.text);
 
 	globalWindow = gtk_application_window_new(app);
 	gtk_window_set_title(GTK_WINDOW(globalWindow), "Indicator");
@@ -28,22 +26,21 @@ static void onActivate(GtkApplication *app, gpointer data) {
 	switch (elementType) {
 		case SLIDER: {
 			printf("[onActivate] Building slider with passed data\n");
-			// Create sliderData from currentArgs
-			sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
+			sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action.slider};
 			box = buildSlider(&s);
 			break;
 		}
 		case TEXT: {
 			printf("[onActivate] Building text with passed data\n");
-			// Create textData from currentArgs
 			textData t;
-			strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
+			strncpy(t.text, currentArgs.text ? currentArgs.text : "", sizeof(t.text) - 1);
 			t.text[sizeof(t.text) - 1] = '\0';
+			t.action = currentArgs.action.text;
 			box = buildText(&t);
 			break;
 		}
 		default: {
-			textData t = {""};
+			textData t = {"", BAT_LOW};
 			box = buildText(&t);
 			break;
 		}
@@ -76,11 +73,11 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 	elementType = currentArgs.element;
 	
 	if (globalWindow) {
-		// Create proper sliderData and textData from currentArgs
-		sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
+		sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action.slider};
 		textData t;
-		strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
+		strncpy(t.text, currentArgs.text ? currentArgs.text : "", sizeof(t.text) - 1);
 		t.text[sizeof(t.text) - 1] = '\0';
+		t.action = currentArgs.action.text;
 		
 		printf("[commandLineHandler] Calling updateContent with proper structs\n");
 		updateContent(elementType, &s, &t);

@@ -15,7 +15,7 @@ OBJ_DIR = out
 all: $(TARGET) $(UI_TARGET) compile_commands.json
 
 $(TARGET): $(OBJ_DIR)/ozhium-ollium.o $(OBJ_DIR)/invoke.o $(OBJ_DIR)/tool-daemon.o
-	$(CC) $^ -o $@ -lpulse
+	$(CC) $^ -o $@ -lpulse -ludev
 
 $(UI_TARGET): $(OBJ_DIR)/ui-main.o $(OBJ_DIR)/ui-config.o $(OBJ_DIR)/ui-window.o $(OBJ_DIR)/ui-builder.o $(OBJ_DIR)/ui-args.o $(OBJ_DIR)/tool-ui.o
 	$(CC) $^ -o $@ $(GTK_LDFLAGS)
