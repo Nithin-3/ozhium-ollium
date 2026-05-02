@@ -74,3 +74,18 @@ int catFileStr(const char *p, char *v, size_t maxLen) {
     return r == 1;
 }
 
+int findBatteryPaths(char *cap, char *sta, size_t sz) {
+    DIR *d = opendir("/sys/class/power_supply/");
+    if (!d) return -1;
+    struct dirent *de;
+    while ((de = readdir(d))) {
+        if (strncmp(de->d_name, "BAT", 3) != 0) continue;
+        snprintf(cap, sz, "/sys/class/power_supply/%s/capacity", de->d_name);
+        snprintf(sta, sz, "/sys/class/power_supply/%s/status",   de->d_name);
+        closedir(d);
+        return 0;
+    }
+    closedir(d);
+    return 1;
+}
+
