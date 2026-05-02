@@ -19,6 +19,11 @@ Icons icons = {
 	.volumeMute = "󰖁",
 	.mic = "󰍬",
 	.micMute = "",
+	.batCharge = "󰂄",
+	.batDischarge="󰁾",
+	.batFull="",
+	.batLow="󱊡",
+	.batIdel="󰁹"
 };
 
 SliderConfig sliderConfig = {
@@ -106,6 +111,16 @@ void loadConfig(void) {
 		icons.mic = g_key_file_get_string(keyfile, "icons", "mic", &error);
 	if (g_key_file_has_key(keyfile, "icons", "mic-mute", NULL))
 		icons.micMute = g_key_file_get_string(keyfile, "icons", "mic-mute", &error);
+	if (g_key_file_has_key(keyfile, "icons", "bat-low", NULL))
+		icons.batLow = g_key_file_get_string(keyfile, "icons", "bat-low", &error);
+	if (g_key_file_has_key(keyfile, "icons", "bat-full", NULL))
+		icons.batFull = g_key_file_get_string(keyfile, "icons", "bat-full", &error);
+	if (g_key_file_has_key(keyfile, "icons", "bat-charge", NULL))
+		icons.batCharge = g_key_file_get_string(keyfile, "icons", "bat-charge", &error);
+	if (g_key_file_has_key(keyfile, "icons", "bat-discharge", NULL))
+		icons.batDischarge = g_key_file_get_string(keyfile, "icons", "bat-discharge", &error);
+	if (g_key_file_has_key(keyfile, "icons", "bat-idel", NULL))
+		icons.batIdel = g_key_file_get_string(keyfile, "icons", "bat-idel", &error);
 	// ====================
 
 	g_key_file_unref(keyfile);

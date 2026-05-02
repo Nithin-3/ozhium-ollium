@@ -27,6 +27,23 @@ static char *getIconForAction(SLIDER_ACTION action) {
 	}
 }
 
+static char *getIconForTextAction(TEXT_ACTION action) {
+	switch (action) {
+		case BAT_LOW:
+			return icons.batLow;
+		case BAT_FULL:
+			return icons.batFull;
+		case BAT_CHARGE:
+			return icons.batCharge;
+		case BAT_DISCHARGE:
+			return icons.batDischarge;
+		case BAT_IDEL:
+			return icons.batIdel;
+		default:
+			return icons.batLow;
+	}
+}
+
 char *str_replace(const char *src, const char *find, const char *replace) {
     char *result;
     const char *pos = strstr(src, find);
@@ -58,7 +75,10 @@ void applySlider(sliderData *s){
 
 void applyText(textData *t){
 	if (textWidget) {
-		gtk_label_set_text(GTK_LABEL(textWidget), t->text);
+		char *icon = getIconForTextAction(t->action);
+		char labelText[512];
+		snprintf(labelText, sizeof(labelText), "%s %s", icon ? icon : "", t->text);
+		gtk_label_set_text(GTK_LABEL(textWidget), labelText);
 	} else {
 		printf("[APPLY_TEXT] WARNING: textWidget is NULL\n");
 	}
@@ -112,9 +132,13 @@ GtkWidget *buildSlider(const sliderData *s) {
 }
 
 GtkWidget *buildText(const textData *t) {
-	printf("[buildText] Called with: text='%s'\n", t->text);
+	printf("[buildText] Called with: text='%s' action=%d\n", t->text, t->action);
 	
-	textWidget = gtk_label_new(t->text);
+	char *icon = getIconForTextAction(t->action);
+	char labelText[512];
+	snprintf(labelText, sizeof(labelText), "%s %s", icon ? icon : "", t->text);
+	
+	textWidget = gtk_label_new(labelText);
 	gtk_widget_set_name(textWidget, "text");
 	gtk_label_set_xalign(GTK_LABEL(textWidget), 0.5);
 	gtk_label_set_yalign(GTK_LABEL(textWidget), 0.5);

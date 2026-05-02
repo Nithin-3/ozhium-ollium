@@ -11,6 +11,7 @@ typedef struct {
 
 typedef struct {
 	char *backlight, *volume, *volumeMute, *mic, *micMute;
+	char *batLow, *batFull, *batCharge, *batDischarge, *batIdel;
 } Icons;
 
 typedef struct{
