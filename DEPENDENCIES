@@ -1,0 +1,51 @@
+ozhium-ollium Dependencies
+===========================
+
+Build Dependencies
+-------------------
+  - GCC or Clang compiler
+  - pkg-config
+  - make
+
+Runtime Dependencies
+--------------------
+  Daemon (ozhium-ollium):
+    - libpulse-dev    (PulseAudio library)
+    - libudev-dev     (udev library)
+
+  UI (ozhium-ollium-ui):
+    - gtk4            (GTK+ 4.0)
+    - gtk4-layer-shell
+    - glib2           (GLib)
+
+System Requirements
+-------------------
+  - Linux kernel with inotify support
+  - PulseAudio sound server
+  - udev device manager
+  - /sys/class/backlight/    (backlight device paths)
+  - /sys/class/power_supply/ (battery device paths)
+
+Installation Examples
+---------------------
+
+  Debian/Ubuntu:
+    sudo apt install build-essential pkg-config libpulse-dev libudev-dev libgtk-4-dev libgtk4-layer-shell-dev
+
+  Fedora/RHEL:
+    sudo dnf install gcc make pkg-config pulseaudio-libs-devel systemd-devel gtk4-devel gtk4-layer-shell-devel
+
+  Arch Linux:
+    sudo pacman -S base-devel pkgconf pulseaudio udev gtk4
+
+  openSUSE:
+    sudo zypper install gcc make pkg-config libpulse-devel libudev-devel gtk4-devel gtk4-layer-shell-devel
+
+Verification
+------------
+  After installation, run:
+    make
+
+  This will build both:
+    - ozhium-ollium      (daemon)
+    - ozhium-ollium-ui  (UI binary)
