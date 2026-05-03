@@ -1,5 +1,32 @@
+# ozhium-ollium Makefile
+# 
+# Project: A daemon that monitors Linux backlight and PulseAudio volume changes
+#          and triggers a UI callback when they occur
+#
+# Build Requirements:
+#   - GCC compiler
+#   - pkg-config
+#
+# Runtime Dependencies:
+#   DAEMON (ozhium-ollium):
+#     - libudev (udev library) - for hardware device monitoring
+#     - libpulse (PulseAudio library) - for audio volume monitoring
+#   
+#   UI (ozhium-ollium-ui):
+#     - GTK4 (GTK+ 4) - for GUI
+#     - gtk4-layer-shell - for on-screen display (OSD) rendering
+#
+# System Requirements:
+#   - Linux kernel with inotify support
+#   - PulseAudio sound server
+#   - udev device manager
+#
+# Installation: See DEPENDENCIES file for detailed setup instructions
+
 CC      = gcc
 CFLAGS  = -Wall -Wextra -I include
+
+# GTK4 and gtk4-layer-shell dependencies for UI compilation
 GTK_CFLAGS = $(shell pkg-config --cflags gtk4 gtk4-layer-shell-0)
 GTK_LDFLAGS = $(shell pkg-config --libs gtk4 gtk4-layer-shell-0)
 
@@ -15,9 +42,11 @@ UI_SRC = src/ui/main.c src/ui/config.c src/ui/window.c src/ui/builder.c src/ui/a
 
 all: $(TARGET) $(UI_TARGET)
 
+# Daemon target - links with libudev and libpulse
 $(TARGET): $(OBJ_DIR)/daemon/ozhium-ollium.o $(OBJ_DIR)/daemon/invoke.o $(OBJ_DIR)/daemon/battery.o $(OBJ_DIR)/daemon/pulse.o $(OBJ_DIR)/daemon/tool.o $(OBJ_DIR)/daemon/backLight.o
 	$(CC) $^ -o $@ -lpulse -ludev
 
+# UI target - links with GTK4 and gtk4-layer-shell
 $(UI_TARGET): $(OBJ_DIR)/ui/main.o $(OBJ_DIR)/ui/config.o $(OBJ_DIR)/ui/window.o $(OBJ_DIR)/ui/builder.o $(OBJ_DIR)/ui/args.o $(OBJ_DIR)/ui/tool.o
 	$(CC) $^ -o $@ $(GTK_LDFLAGS)
 
