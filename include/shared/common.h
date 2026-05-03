@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 typedef enum { SLIDER, TEXT } GUI_ELEMENT;
 typedef enum { BACKLIGHT, AUDIO, AUDIO_MUTE, MIC, MIC_MUTE } SLIDER_ACTION;
@@ -16,6 +15,3 @@ typedef struct {
 	char text[256];
 	TEXT_ACTION action;
 } textData;
-
-
-#endif

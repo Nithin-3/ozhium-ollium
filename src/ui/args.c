@@ -1,5 +1,5 @@
 #include "ui/args.h"
-#include "common.h"
+#include "shared/common.h"
 #include <getopt.h>
 #include <stdlib.h>
 #include <string.h>

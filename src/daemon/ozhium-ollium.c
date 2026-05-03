@@ -1,8 +1,7 @@
-#include "backLightTool.h"
-#include "batteryTool.h"
-#include "invoke.h"
-#include "pulseTool.h"
-#include "tool.h"
+#include "daemon/backLight.h"
+#include "daemon/battery.h"
+#include "daemon/invoke.h"
+#include "daemon/pulse.h"
 #include <dirent.h>
 #include <libudev.h>
 #include <linux/limits.h>

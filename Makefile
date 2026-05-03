@@ -6,52 +6,49 @@ GTK_LDFLAGS = $(shell pkg-config --libs gtk4 gtk4-layer-shell-0)
 TARGET      = ozhium-ollium
 UI_TARGET   = ozhium-ollium-ui
 
-SRC_DIR = src
-UI_SRC_DIR = src/ui
 OBJ_DIR = out
 
-.PHONY: all clean compile_commands.json
+DAEMON_SRC = src/daemon/ozhium-ollium.c src/daemon/invoke.c src/daemon/battery.c src/daemon/pulse.c src/daemon/tool.c src/daemon/backLight.c
+UI_SRC = src/ui/main.c src/ui/config.c src/ui/window.c src/ui/builder.c src/ui/args.c src/ui/tool.c
 
-all: $(TARGET) $(UI_TARGET) compile_commands.json
+.PHONY: all clean
 
-$(TARGET): $(OBJ_DIR)/ozhium-ollium.o $(OBJ_DIR)/invoke.o $(OBJ_DIR)/tool-daemon.o
+all: $(TARGET) $(UI_TARGET)
+
+$(TARGET): $(OBJ_DIR)/daemon/ozhium-ollium.o $(OBJ_DIR)/daemon/invoke.o $(OBJ_DIR)/daemon/battery.o $(OBJ_DIR)/daemon/pulse.o $(OBJ_DIR)/daemon/tool.o $(OBJ_DIR)/daemon/backLight.o
 	$(CC) $^ -o $@ -lpulse -ludev
 
-$(UI_TARGET): $(OBJ_DIR)/ui-main.o $(OBJ_DIR)/ui-config.o $(OBJ_DIR)/ui-window.o $(OBJ_DIR)/ui-builder.o $(OBJ_DIR)/ui-args.o $(OBJ_DIR)/tool-ui.o
+$(UI_TARGET): $(OBJ_DIR)/ui/main.o $(OBJ_DIR)/ui/config.o $(OBJ_DIR)/ui/window.o $(OBJ_DIR)/ui/builder.o $(OBJ_DIR)/ui/args.o $(OBJ_DIR)/ui/tool.o
 	$(CC) $^ -o $@ $(GTK_LDFLAGS)
 
-$(OBJ_DIR)/ozhium-ollium.o: $(SRC_DIR)/ozhium-ollium.c | $(OBJ_DIR)
+$(OBJ_DIR)/daemon/ozhium-ollium.o: src/daemon/ozhium-ollium.c | $(OBJ_DIR)/daemon
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJ_DIR)/invoke.o: $(SRC_DIR)/invoke.c | $(OBJ_DIR)
+$(OBJ_DIR)/daemon/invoke.o: src/daemon/invoke.c | $(OBJ_DIR)/daemon
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJ_DIR)/tool-daemon.o: $(SRC_DIR)/tool.c | $(OBJ_DIR)
+$(OBJ_DIR)/daemon/battery.o: src/daemon/battery.c | $(OBJ_DIR)/daemon
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJ_DIR)/tool-ui.o: $(SRC_DIR)/tool.c | $(OBJ_DIR)
+$(OBJ_DIR)/daemon/pulse.o: src/daemon/pulse.c | $(OBJ_DIR)/daemon
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJ_DIR)/ui-%.o: $(UI_SRC_DIR)/%.c | $(OBJ_DIR)
+$(OBJ_DIR)/daemon/tool.o: src/daemon/tool.c | $(OBJ_DIR)/daemon
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(OBJ_DIR)/daemon/backLight.o: src/daemon/backLight.c | $(OBJ_DIR)/daemon
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+$(OBJ_DIR)/ui/%.o: src/ui/%.c | $(OBJ_DIR)/ui
 	$(CC) $(CFLAGS) $(GTK_CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJ_DIR):
+$(OBJ_DIR)/daemon:
 	mkdir -p $@
 
--include $(OBJ_DIR)/*.d
+$(OBJ_DIR)/ui:
+	mkdir -p $@
+
+-include $(OBJ_DIR)/**/*.d
 
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET) $(UI_TARGET)
-
-compile_commands.json:
-	@echo '[' > $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) -c src/ozhium-ollium.c -o out/ozhium-ollium.o", "file": "src/ozhium-ollium.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) -c src/invoke.c -o out/invoke.o", "file": "src/invoke.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) -c src/tool.c -o out/tool-daemon.o", "file": "src/tool.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) -c src/tool.c -o out/tool-ui.o", "file": "src/tool.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) $(GTK_CFLAGS) -c src/ui/main.c -o out/ui-main.o", "file": "src/ui/main.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) $(GTK_CFLAGS) -c src/ui/config.c -o out/ui-config.o", "file": "src/ui/config.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) $(GTK_CFLAGS) -c src/ui/window.c -o out/ui-window.o", "file": "src/ui/window.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) $(GTK_CFLAGS) -c src/ui/builder.c -o out/ui-builder.o", "file": "src/ui/builder.c"},' >> $@
-	@echo '  {"directory": "$(CURDIR)", "command": "$(CC) $(CFLAGS) $(GTK_CFLAGS) -c src/ui/args.c -o out/ui-args.o", "file": "src/ui/args.c"}' >> $@
-	@echo ']' >> $@

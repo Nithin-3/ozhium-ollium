@@ -1,8 +1,7 @@
-#ifndef BATTERY_TOOL_H
-#define BATTERY_TOOL_H
-
-#include "common.h"
-#include "tool.h"
+#include "daemon/battery.h"
+#include "shared/common.h"
+#include "daemon/tool.h"
+#include <dirent.h>
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +9,21 @@
 static char batSta_path[PATH_MAX] = {0};
 static char batCap_path[PATH_MAX] = {0};
 
-static int getBattery(textData *t) { // NOLINT
+int findBatteryPaths(char *cap, char *sta, size_t sz) {
+    DIR *d = opendir("/sys/class/power_supply/");
+    if (!d) return -1;
+    struct dirent *de;
+    while ((de = readdir(d))) {
+        if (strncmp(de->d_name, "BAT", 3) != 0) continue;
+        snprintf(cap, sz, "/sys/class/power_supply/%s/capacity", de->d_name);
+        snprintf(sta, sz, "/sys/class/power_supply/%s/status",   de->d_name);
+        closedir(d);
+        return 0;
+    }
+    closedir(d);
+    return 1;
+}
+int getBattery(textData *t) {
 	if (batSta_path[0] == '\0') {
 		if (findBatteryPaths(batCap_path, batSta_path, PATH_MAX))
 			return 1;
@@ -31,5 +44,3 @@ static int getBattery(textData *t) { // NOLINT
 
 	return 0;
 }
-
-#endif

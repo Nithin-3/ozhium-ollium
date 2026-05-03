@@ -1,7 +1,6 @@
-#ifndef UI_ARGS_H
-#define UI_ARGS_H
+#pragma once
 
-#include "common.h"
+#include "shared/common.h"
 
 typedef struct {
 	GUI_ELEMENT element;
@@ -17,5 +16,3 @@ GUI_ELEMENT argToElement(const char *s);
 SLIDER_ACTION argToSliderAction(const char *s);
 TEXT_ACTION argToTextAction(const char *s);
 int parseArgs(int argc, char *argv[], ParsedArgs *args);
-
-#endif

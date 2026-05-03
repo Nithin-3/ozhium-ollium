@@ -1,6 +1,6 @@
 #include "ui/window.h"
 #include "ui/config.h"
-#include "tool.h"
+#include "daemon/tool.h"
 #include <gtk4-layer-shell/gtk4-layer-shell.h>
 #include <stdio.h>
 #include <string.h>

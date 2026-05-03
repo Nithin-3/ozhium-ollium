@@ -1,11 +1,9 @@
-#ifndef PULSE_TOOL_H
-#define PULSE_TOOL_H
-
-#include "invoke.h"
+#include "daemon/invoke.h"
+#include "daemon/pulse.h"
 #include <pulse/pulseaudio.h>
 #include <stdio.h>
 
-static pa_context *pa_ctx;
+pa_context *pa_ctx;
 
 static void sink_cb(pa_context *c, const pa_sink_info *info, int eol,void *ud) {
 	(void)c;
@@ -61,19 +59,17 @@ static void context_state_cb(pa_context *c, void *ud) {
 	pa_context_subscribe(c, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL);
 }
 
-static int initPulseAudio(pa_mainloop_api *api) { //NOLINT
+int initPulseAudio(pa_mainloop_api *api) {
 	pa_ctx = pa_context_new(api, "pulse-sink-watcher");
 	if (!pa_ctx) {
 		fprintf(stderr, "Failed to create PA context\n");
 		return 1;
 	}
 	pa_context_set_state_callback(pa_ctx, context_state_cb, NULL);
-        if (0 > pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOFLAGS, NULL)) { // NOLINT
+        if (0 > pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOFLAGS, NULL)) {
           fprintf(stderr, "PA connect failed: %s\n", pa_strerror(pa_context_errno(pa_ctx)));
           pa_context_unref(pa_ctx);
           return 1;
         }
         return 0;
 }
-
-#endif

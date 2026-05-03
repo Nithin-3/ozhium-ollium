@@ -1,5 +1,4 @@
-#ifndef UI_CONFIG_H
-#define UI_CONFIG_H
+#pragma once
 
 #include <glib.h>
 #include <stdbool.h>
@@ -29,5 +28,3 @@ extern SliderConfig sliderConfig;
 extern TextConfig textConfig;
 
 void loadConfig(void);
-
-#endif
