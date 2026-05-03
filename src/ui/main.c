@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * main.c - UI entry point
+ */
+
 #include "ui/config.h"
 #include "ui/window.h"
 #include "ui/builder.h"

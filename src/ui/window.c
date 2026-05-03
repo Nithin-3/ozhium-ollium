@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * window.c - Window management
+ */
+
 #include "ui/window.h"
 #include "ui/config.h"
 #include "daemon/tool.h"

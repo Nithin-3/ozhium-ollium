@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * config.c - Configuration loading
+ */
+
 #include "ui/config.h"
 #include "glib.h"
 #include "glibconfig.h"

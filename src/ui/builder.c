@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * builder.c - Widget building
+ */
+
 #include "ui/builder.h"
 #include "ui/config.h"
 #include "ui/config.h"

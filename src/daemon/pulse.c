@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * pulse.c - PulseAudio integration
+ */
+
 #include "daemon/invoke.h"
 #include "daemon/pulse.h"
 #include <pulse/pulseaudio.h>

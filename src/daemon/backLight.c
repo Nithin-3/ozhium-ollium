@@ -1,9 +1,17 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * backLight.c - Backlight monitoring
+ */
+
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <linux/limits.h>
-
 #include "daemon/backLight.h"
 #include "daemon/tool.h"
 

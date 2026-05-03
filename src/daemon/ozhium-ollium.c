@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * ozhium-ollium.c - Main daemon entry point
+ */
+
 #include "daemon/backLight.h"
 #include "daemon/battery.h"
 #include "daemon/invoke.h"

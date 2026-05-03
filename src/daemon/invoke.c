@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * invoke.c - UI invocation
+ */
+
 #include "daemon/invoke.h"
 #include "daemon/tool.h"
 #include <linux/limits.h>

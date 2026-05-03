@@ -4,6 +4,15 @@
 #include <unistd.h>
 #include <linux/limits.h>
 
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * tool.c - Utility functions
+ */
+
 #include "daemon/tool.h"
 
 char *findConfigPath(const char *filename) {
