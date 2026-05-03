@@ -67,11 +67,6 @@ Run the daemon:
 ./ozhium-ollium
 ```
 
-For verbose output:
-```bash
-./ozhium-ollium -v
-```
-
 ## How It Works
 
 The project consists of two main components:
