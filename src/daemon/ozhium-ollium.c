@@ -15,6 +15,7 @@ int bri_wd=0;
 static struct udev_monitor *udev_mon = NULL;
 static char prev_bat_status[32] = {0};
 
+// inotify callback - monitors backlight brightness changes
 static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api;
 	(void)e;
@@ -35,6 +36,7 @@ static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event
 	}
 }
 
+// udev callback - monitors battery status changes
 static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api; (void)e; (void)fd; (void)events; (void)ud;
 
@@ -68,23 +70,27 @@ static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_fl
         udev_device_unref(dev);
 }
 
+
+
+// Main entry point - initializes inotify, udev, and PulseAudio then runs mainloop
 int main() {
-	printf("ozhium-ollium started ....\n");
+	fprintf(stdout,"ozhium-ollium started ....\n");
 	pa_mainloop *ml = pa_mainloop_new();
 	if (!ml) { fprintf(stderr, "Failed to create mainloop\n"); return 1; }
 	pa_mainloop_api *api = pa_mainloop_get_api(ml);
 
-	if (findBacklightPaths(bri_path, max_path, PATH_MAX)) {
-		fprintf(stderr, "could not find backlight path\n");
-		pa_mainloop_free(ml);
-		return 1;
-	}
-
 	int in_fd = inotify_init();
 	if (in_fd < 0) { perror("inotify init"); pa_mainloop_free(ml); return 1; }
-	bri_wd = inotify_add_watch(in_fd, bri_path, IN_MODIFY);
-	if (bri_wd < 0) { perror("inotify watch"); close(in_fd); pa_mainloop_free(ml); return 1; }
-	printf("[inotify watch] path : %s\n", bri_path);
+
+	if (findBacklightPaths(bri_path, max_path, PATH_MAX)) {
+		fprintf(stdout, "could not find backlight path\n");
+	}else {
+	
+		bri_wd = inotify_add_watch(in_fd, bri_path, IN_MODIFY);
+		if (bri_wd < 0) { perror("inotify watch"); close(in_fd); pa_mainloop_free(ml); return 1; }
+		fprintf(stdout,"[inotify watch] path : %s\n", bri_path);
+
+	}
 
 	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotify_cb, NULL);
 
@@ -96,20 +102,20 @@ int main() {
 			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "power_supply", NULL);
 			udev_monitor_enable_receiving(udev_mon);
 			int udev_fd = udev_monitor_get_fd(udev_mon);
-			printf("[udev] monitoring power_supply\n");
+			fprintf(stdout,"[udev] monitoring power_supply\n");
 			api->io_new(api, udev_fd, PA_IO_EVENT_INPUT, udev_cb, NULL);
 		}
 	}
 
 
-	if (initPulseAudio(api) != 0) {
+	if (initPulseAudio(api) != 0) { // if it fail daemon won't start
 		fprintf(stderr, "Failed to init PulseAudio\n");
 		close(in_fd);
 		pa_mainloop_free(ml);
 		return 1;
 	}
 
-	printf("watch pulse srink source\n(Ctrl+C to exit)\n");
+	fprintf(stdout,"watch pulse srink source\n(Ctrl+C to exit)\n");
 	pa_mainloop_run(ml, NULL);
 
 	if (pa_ctx) pa_context_unref(pa_ctx);
