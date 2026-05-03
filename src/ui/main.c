@@ -11,7 +11,6 @@
 #include "ui/window.h"
 #include "ui/builder.h"
 #include "ui/args.h"
-#include "daemon/invoke.h"
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <string.h>

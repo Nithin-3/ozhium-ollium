@@ -13,8 +13,6 @@
  * tool.c - Utility functions
  */
 
-#include "daemon/tool.h"
-
 char *findConfigPath(const char *filename) {
 	static char path[PATH_MAX];
 	const char *home = getenv("HOME");

@@ -10,7 +10,7 @@
 #include "ui/config.h"
 #include "glib.h"
 #include "glibconfig.h"
-#include "daemon/tool.h"
+#include "ui/tool.h"
 
 AppConfig appConfig = {
 	.horizontalAlign = "center",
