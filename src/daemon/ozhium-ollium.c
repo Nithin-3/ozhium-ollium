@@ -21,8 +21,8 @@
 
 
 int bri_wd=0;
-static struct udev_monitor *udev_mon = NULL;
-static char prev_bat_status[32] = {0};
+	static struct udev_monitor *udev_mon = NULL;
+	static char prev_bat_status[32] = {0};
 
 // inotify callback - monitors backlight brightness changes
 static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
@@ -45,7 +45,7 @@ static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event
 	}
 }
 
-// udev callback - monitors battery status changes
+// udev callback - monitors net and bluetooth changes
 static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api; (void)e; (void)fd; (void)events; (void)ud;
 
@@ -54,24 +54,40 @@ static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_fl
 	struct udev_device *dev = udev_monitor_receive_device(udev_mon);
 	if (!dev) return;
 
-	const char *power_type = udev_device_get_property_value(dev, "POWER_SUPPLY_TYPE");
-	sleep(1);
-	if (!power_type || strcmp(power_type, "Battery") == 0) {
-		const char *action = udev_device_get_action(dev);
-		const char *status = udev_device_get_sysattr_value(dev, "status");
-		if (action && 0 == strcmp(action, "change")) {
+	const char *subsystem = udev_device_get_subsystem(dev);
+	const char *action = udev_device_get_action(dev);
 
-			if (prev_bat_status[0] != '\0' && 0 == strcmp(status, prev_bat_status)) {
-				udev_device_unref(dev);
-				return;
+	if (action && 0 == strcmp(action, "change")) {
+		if (subsystem && 0 == strcmp(subsystem, "net")) {
+			sleep(1);
+			const char *name = udev_device_get_sysname(dev);
+			const char *operstate = udev_device_get_sysattr_value(dev, "operstate");
+			fprintf(stdout, "[udev] net: %s operstate: %s===================================================================================\n", name ? name : "?", operstate ? operstate : "?");
+
+		} else if (subsystem && 0 == strcmp(subsystem, "bluetooth")) {
+			sleep(1);
+			const char *name = udev_device_get_sysname(dev);
+			const char *powered = udev_device_get_sysattr_value(dev, "powered");
+			const char *connected = udev_device_get_sysattr_value(dev, "connected");
+			fprintf(stdout, "[udev] bluetooth: %s powered: %s connected: %s=================================================================\n", name ? name : "?", powered ? powered : "?", connected ? connected : "?");
+
+		} else if (subsystem && 0 == strcmp(subsystem, "power_supply")) {
+			const char *power_type = udev_device_get_property_value(dev, "POWER_SUPPLY_TYPE");
+			sleep(1);
+			if (!power_type || strcmp(power_type, "Battery") == 0) {
+				const char *status = udev_device_get_sysattr_value(dev, "status");
+				if (prev_bat_status[0] != '\0' && status && 0 == strcmp(status, prev_bat_status)) {
+					udev_device_unref(dev);
+					return;
+				}
+				if (status) {
+					strncpy(prev_bat_status, status, sizeof(prev_bat_status) - 1);
+					prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
+				}
+				textData t = {0};
+				getBattery(&t);
+				execUI(TEXT, &t);
 			}
-
-			strncpy(prev_bat_status, status, sizeof(prev_bat_status) - 1);
-			prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
-
-			textData t = {0};
-			getBattery(&t);
-			execUI(TEXT, &t);
 		}
 	}
 
@@ -107,10 +123,12 @@ int main() {
 	else {
 		udev_mon = udev_monitor_new_from_netlink(udev, "kernel");
 		if (udev_mon) {
+			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "net", NULL);
+			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "bluetooth", NULL);
 			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "power_supply", NULL);
 			udev_monitor_enable_receiving(udev_mon);
 			int udev_fd = udev_monitor_get_fd(udev_mon);
-			fprintf(stdout,"[udev] monitoring power_supply\n");
+			fprintf(stdout,"[udev] monitoring net, bluetooth, power_supply\n");
 			api->io_new(api, udev_fd, PA_IO_EVENT_INPUT, udev_cb, NULL);
 		}
 	}
