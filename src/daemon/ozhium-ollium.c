@@ -55,27 +55,26 @@ static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_fl
 	if (!dev) return;
 
 	const char *power_type = udev_device_get_property_value(dev, "POWER_SUPPLY_TYPE");
-	if (!power_type || strcmp(power_type, "Battery") != 0) {
-		udev_device_unref(dev);
-		return;
-	}
+	sleep(1);
+	if (!power_type || strcmp(power_type, "Battery") == 0) {
+		const char *action = udev_device_get_action(dev);
+		const char *status = udev_device_get_sysattr_value(dev, "status");
+		if (action && 0 == strcmp(action, "change")) {
 
-	const char *action = udev_device_get_action(dev);
-	const char *status = udev_device_get_sysattr_value(dev, "status");
-	if (action && (0 == strcmp(action, "change") || 0 == strcmp(action, "update"))) {
+			if (prev_bat_status[0] != '\0' && 0 == strcmp(status, prev_bat_status)) {
+				udev_device_unref(dev);
+				return;
+			}
 
-		if (prev_bat_status[0] != '\0' && 0 == strcmp(status, prev_bat_status)) {
-			udev_device_unref(dev);
-			return;
+			strncpy(prev_bat_status, status, sizeof(prev_bat_status) - 1);
+			prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
+
+			textData t = {0};
+			getBattery(&t);
+			execUI(TEXT, &t);
 		}
-
-		strncpy(prev_bat_status, status, sizeof(prev_bat_status) - 1);
-		prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
-
-		textData t = {0};
-		getBattery(&t);
-		execUI(TEXT, &t);
 	}
+
         udev_device_unref(dev);
 }
 
