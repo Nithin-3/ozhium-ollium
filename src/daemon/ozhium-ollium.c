@@ -10,9 +10,9 @@
 #include "daemon/backLight.h"
 #include "daemon/battery.h"
 #include "daemon/invoke.h"
+#include "daemon/netlink.h"
 #include "daemon/pulse.h"
 #include <dirent.h>
-#include <libudev.h>
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,15 +21,17 @@
 
 
 int bri_wd=0;
-	static struct udev_monitor *udev_mon = NULL;
-	static char prev_bat_status[32] = {0};
+int bat_wd = 0;
+static char prev_bat_status[32] = {0};
+static int mainloop_running = 0;
 
-// inotify callback - monitors backlight brightness changes
+// inotify callback - monitors backlight and battery changes
 static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api;
 	(void)e;
 	(void)ud;
 	if (!(events & PA_IO_EVENT_INPUT)) return;
+	if (!mainloop_running) return;
 	char buf[4096];
 	ssize_t len = read(fd, buf, sizeof(buf));
 	if (len <= 0) return;
@@ -39,115 +41,74 @@ static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event
 			if (ev->wd == bri_wd) {
 				sliderData slider;
 				if (0 == getBacklight(&slider)) execUI(SLIDER, &slider);
+			} else if (ev->wd == bat_wd) {
+				textData t = {0};
+				getBattery(&t);
+				if (prev_bat_status[0] == '\0' || strcmp(t.text, prev_bat_status) != 0) {
+					strncpy(prev_bat_status, t.text, sizeof(prev_bat_status) - 1);
+					prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
+					execUI(TEXT, &t);
+				}
 			}
 		}
 		p += sizeof(struct inotify_event) + ev->len;
 	}
 }
 
-// udev callback - monitors net and bluetooth changes
-static void udev_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
-	(void)api; (void)e; (void)fd; (void)events; (void)ud;
-
-	if (!(events & PA_IO_EVENT_INPUT)) return;
-
-	struct udev_device *dev = udev_monitor_receive_device(udev_mon);
-	if (!dev) return;
-
-	const char *subsystem = udev_device_get_subsystem(dev);
-	const char *action = udev_device_get_action(dev);
-
-	if (action && 0 == strcmp(action, "change")) {
-		if (subsystem && 0 == strcmp(subsystem, "net")) {
-			sleep(1);
-			const char *name = udev_device_get_sysname(dev);
-			const char *operstate = udev_device_get_sysattr_value(dev, "operstate");
-			fprintf(stdout, "[udev] net: %s operstate: %s===================================================================================\n", name ? name : "?", operstate ? operstate : "?");
-
-		} else if (subsystem && 0 == strcmp(subsystem, "bluetooth")) {
-			sleep(1);
-			const char *name = udev_device_get_sysname(dev);
-			const char *powered = udev_device_get_sysattr_value(dev, "powered");
-			const char *connected = udev_device_get_sysattr_value(dev, "connected");
-			fprintf(stdout, "[udev] bluetooth: %s powered: %s connected: %s=================================================================\n", name ? name : "?", powered ? powered : "?", connected ? connected : "?");
-
-		} else if (subsystem && 0 == strcmp(subsystem, "power_supply")) {
-			const char *power_type = udev_device_get_property_value(dev, "POWER_SUPPLY_TYPE");
-			sleep(1);
-			if (!power_type || strcmp(power_type, "Battery") == 0) {
-				const char *status = udev_device_get_sysattr_value(dev, "status");
-				if (prev_bat_status[0] != '\0' && status && 0 == strcmp(status, prev_bat_status)) {
-					udev_device_unref(dev);
-					return;
-				}
-				if (status) {
-					strncpy(prev_bat_status, status, sizeof(prev_bat_status) - 1);
-					prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
-				}
-				textData t = {0};
-				getBattery(&t);
-				execUI(TEXT, &t);
-			}
-		}
-	}
-
-        udev_device_unref(dev);
-}
-
-
-
-// Main entry point - initializes inotify, udev, and PulseAudio then runs mainloop
+// Main entry point - initializes inotify, netlink, and PulseAudio then runs mainloop
 int main() {
 	fprintf(stdout,"ozhium-ollium started ....\n");
+	fflush(stdout);
 	pa_mainloop *ml = pa_mainloop_new();
 	if (!ml) { fprintf(stderr, "Failed to create mainloop\n"); return 1; }
 	pa_mainloop_api *api = pa_mainloop_get_api(ml);
+
+	mainloop_running = 1;
 
 	int in_fd = inotify_init();
 	if (in_fd < 0) { perror("inotify init"); pa_mainloop_free(ml); return 1; }
 
 	if (findBacklightPaths(bri_path, max_path, PATH_MAX)) {
 		fprintf(stdout, "could not find backlight path\n");
+		fflush(stdout);
 	}else {
-	
+
 		bri_wd = inotify_add_watch(in_fd, bri_path, IN_MODIFY);
 		if (bri_wd < 0) { perror("inotify watch"); close(in_fd); pa_mainloop_free(ml); return 1; }
 		fprintf(stdout,"[inotify watch] path : %s\n", bri_path);
+		fflush(stdout);
 
 	}
 
 	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotify_cb, NULL);
 
-	struct udev *udev = udev_new();
-	if (!udev) { fprintf(stderr, "Failed to create udev\n"); }
-	else {
-		udev_mon = udev_monitor_new_from_netlink(udev, "kernel");
-		if (udev_mon) {
-			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "net", NULL);
-			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "bluetooth", NULL);
-			udev_monitor_filter_add_match_subsystem_devtype(udev_mon, "power_supply", NULL);
-			udev_monitor_enable_receiving(udev_mon);
-			int udev_fd = udev_monitor_get_fd(udev_mon);
-			fprintf(stdout,"[udev] monitoring net, bluetooth, power_supply\n");
-			api->io_new(api, udev_fd, PA_IO_EVENT_INPUT, udev_cb, NULL);
-		}
+	char bat_path[PATH_MAX] = {0};
+	if (findBatteryPaths(bat_path, NULL, sizeof(bat_path)) == 0) {
+		bat_wd = inotify_add_watch(in_fd, bat_path, IN_MODIFY);
+		if (bat_wd < 0) { perror("inotify watch battery"); }
+		else { fprintf(stdout, "[inotify watch] battery: %s\n", bat_path); fflush(stdout); }
+	}
+
+	if (initNetlink(api) != 0) {
+		fprintf(stderr, "Failed to init netlink\n");
+		fflush(stderr);
 	}
 
 
-	if (initPulseAudio(api) != 0) { // if it fail daemon won't start
+	if (initPulseAudio(api) != 0) {
 		fprintf(stderr, "Failed to init PulseAudio\n");
 		close(in_fd);
 		pa_mainloop_free(ml);
 		return 1;
 	}
 
-	fprintf(stdout,"watch pulse srink source\n(Ctrl+C to exit)\n");
+	fprintf(stdout,"watch pulse sink source\n(Ctrl+C to exit)\n");
+	fflush(stdout);
 	pa_mainloop_run(ml, NULL);
 
 	if (pa_ctx) pa_context_unref(pa_ctx);
 	close(in_fd);
-	if (udev_mon) udev_monitor_unref(udev_mon);
-	if (udev) udev_unref(udev);
+	cleanupNetlink();
 	pa_mainloop_free(ml);
 	return 0;
 }

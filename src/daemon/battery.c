@@ -24,8 +24,8 @@ int findBatteryPaths(char *cap, char *sta, size_t sz) {
     struct dirent *de;
     while ((de = readdir(d))) {
         if (strncmp(de->d_name, "BAT", 3) != 0) continue;
-        snprintf(cap, sz, "/sys/class/power_supply/%s/capacity", de->d_name);
-        snprintf(sta, sz, "/sys/class/power_supply/%s/status",   de->d_name);
+	if (cap) snprintf(cap, sz, "/sys/class/power_supply/%s/capacity", de->d_name);
+	if (sta) snprintf(sta, sz, "/sys/class/power_supply/%s/status", de->d_name);
         closedir(d);
         return 0;
     }

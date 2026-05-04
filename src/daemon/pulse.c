@@ -14,6 +14,9 @@
 
 pa_context *pa_ctx;
 
+static pa_cvolume last_sink_volume;
+static int last_sink_mute = -1;
+
 static void sink_cb(pa_context *c, const pa_sink_info *info, int eol,void *ud) {
 	(void)c;
 	(void)ud;
@@ -22,6 +25,12 @@ static void sink_cb(pa_context *c, const pa_sink_info *info, int eol,void *ud) {
 	pa_volume_t vol = pa_cvolume_avg(&info->volume);
 	float current = (float)vol / PA_VOLUME_NORM;
 	int muted = info->mute;
+
+        if (vol == pa_cvolume_avg(&last_sink_volume) && muted == last_sink_mute) return;
+
+	last_sink_volume = info->volume;
+	last_sink_mute = muted;
+
 	sliderData s = {
 		.min=0,
 		.max=1,
@@ -31,6 +40,9 @@ static void sink_cb(pa_context *c, const pa_sink_info *info, int eol,void *ud) {
 	execUI(SLIDER, &s);
 }
 
+static pa_cvolume last_source_volume;
+static int last_source_mute = -1;
+
 static void source_cb(pa_context *c, const pa_source_info *info, int eol, void *ud) {
 	(void)c;
 	(void)ud;
@@ -39,6 +51,12 @@ static void source_cb(pa_context *c, const pa_source_info *info, int eol, void *
 	pa_volume_t vol = pa_cvolume_avg(&info->volume);
 	float current = (float)vol / PA_VOLUME_NORM;
 	int muted = info->mute;
+
+	if (vol == pa_cvolume_avg(&last_source_volume) && muted == last_source_mute) return;
+
+	last_source_volume = info->volume;
+	last_source_mute = muted;
+
 	sliderData s = {
 		.min=0,
 		.max=1,
