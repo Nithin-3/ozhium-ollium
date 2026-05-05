@@ -21,8 +21,6 @@
 
 
 int bri_wd=0;
-int bat_wd = 0;
-static char prev_bat_status[32] = {0};
 static int mainloop_running = 0;
 
 // inotify callback - monitors backlight and battery changes
@@ -41,14 +39,6 @@ static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event
 			if (ev->wd == bri_wd) {
 				sliderData slider;
 				if (0 == getBacklight(&slider)) execUI(SLIDER, &slider);
-			} else if (ev->wd == bat_wd) {
-				textData t = {0};
-				getBattery(&t);
-				if (prev_bat_status[0] == '\0' || strcmp(t.text, prev_bat_status) != 0) {
-					strncpy(prev_bat_status, t.text, sizeof(prev_bat_status) - 1);
-					prev_bat_status[sizeof(prev_bat_status) - 1] = '\0';
-					execUI(TEXT, &t);
-				}
 			}
 		}
 		p += sizeof(struct inotify_event) + ev->len;
@@ -82,18 +72,10 @@ int main() {
 
 	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotify_cb, NULL);
 
-	char bat_path[PATH_MAX] = {0};
-	if (findBatteryPaths(bat_path, NULL, sizeof(bat_path)) == 0) {
-		bat_wd = inotify_add_watch(in_fd, bat_path, IN_MODIFY);
-		if (bat_wd < 0) { perror("inotify watch battery"); }
-		else { fprintf(stdout, "[inotify watch] battery: %s\n", bat_path); fflush(stdout); }
-	}
-
 	if (initNetlink(api) != 0) {
 		fprintf(stderr, "Failed to init netlink\n");
 		fflush(stderr);
 	}
-
 
 	if (initPulseAudio(api) != 0) {
 		fprintf(stderr, "Failed to init PulseAudio\n");
