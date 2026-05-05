@@ -10,6 +10,7 @@
 #include "daemon/netlink.h"
 #include "daemon/battery.h"
 #include "daemon/invoke.h"
+#include "shared/common.h"
 #include <asm/types.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
@@ -25,13 +26,12 @@ static pa_io_event *netlink_io = NULL;
 static pa_io_event *uevent_io  = NULL;
 static pa_mainloop_api *netlink_api = NULL;
 
-static int nl_first = 0;
-static int ue_first = 0;
+static char last_net_state[128] = {0};
+static char last_bt_state[32] = {0};
+static TEXT_ACTION last_battery_state;
 
 
 static void netlink_recv(int fd) {
-	if (!nl_first) { nl_first = 1; return; }
-
 	char buf[8192];
 	struct sockaddr_nl addr;
 	socklen_t addr_len = sizeof(addr);
@@ -49,17 +49,16 @@ static void netlink_recv(int fd) {
 			while (RTA_OK(rta, rtl)) {
 				if (rta->rta_type == IFLA_IFNAME) {
 					char *ifname = (char *)RTA_DATA(rta);
-					if (strncmp(ifname, "wlan", 4) == 0 ||
-							strncmp(ifname, "wlp",  3) == 0 ||
-							strncmp(ifname, "eth",  3) == 0 ||
-							strncmp(ifname, "en",   2) == 0) {
+					if (strncmp(ifname, "wlan", 4) == 0 || strncmp(ifname, "wlp",  3) == 0 || strncmp(ifname, "eth",  3) == 0 || strncmp(ifname, "en",   2) == 0) {
 
 						textData t = {0};
-						snprintf(t.text, sizeof(t.text), "%s %s",
-								ifname,
-								(ifi->ifi_flags & IFF_UP) ? "up" : "down");
-						execUI(TEXT, &t);
-						fprintf(stdout, "[netlink] net: %s\n", t.text);
+						snprintf(t.text, sizeof(t.text), "%s %s", ifname, (ifi->ifi_flags & IFF_UP) ? "up" : "down");
+
+						if (strcmp(last_net_state, t.text) != 0) {
+							strncpy(last_net_state, t.text, sizeof(last_net_state) - 1);
+							execUI(TEXT, &t);
+							fprintf(stdout, "[netlink] net: %s\n", t.text);
+						}
 					}
 				}
 				rta = RTA_NEXT(rta, rtl);
@@ -71,8 +70,6 @@ static void netlink_recv(int fd) {
 
 
 static void uevent_recv(int fd) {
-	if (!ue_first) { ue_first = 1; return; }
-
 	char buf[8192];
 	ssize_t len = read(fd, buf, sizeof(buf) - 1);
 	if (len <= 0) return;
@@ -85,7 +82,7 @@ static void uevent_recv(int fd) {
 	p += strlen(p) + 1;
 
 	while (p < buf + len) {
-		if      (strncmp(p, "ACTION=",    7)  == 0) strncpy(action,    p + 7,  sizeof(action)    - 1);
+		if (strncmp(p, "ACTION=",    7)  == 0) strncpy(action,    p + 7,  sizeof(action)    - 1);
 		else if (strncmp(p, "SUBSYSTEM=", 10) == 0) strncpy(subsystem, p + 10, sizeof(subsystem) - 1);
 		p += strlen(p) + 1;
 	}
@@ -95,15 +92,23 @@ static void uevent_recv(int fd) {
 	if (strcmp(subsystem, "bluetooth") == 0) {
 		textData t = {0};
 		snprintf(t.text, sizeof(t.text), "bluetooth %s", action);
-		execUI(TEXT, &t);
-		fprintf(stdout, "[uevent] bluetooth: %s\n", action);
+
+		if (strcmp(last_bt_state, t.text) != 0) {
+			strncpy(last_bt_state, t.text, sizeof(last_bt_state) - 1);
+			execUI(TEXT, &t);
+			fprintf(stdout, "[uevent] bluetooth: %s\n", action);
+		}
 
 	} else if (strcmp(subsystem, "power_supply") == 0) {
 		if (strcmp(action, "change") == 0) {
 			textData t = {0};
 			getBattery(&t);
-			execUI(TEXT, &t);
-			fprintf(stdout, "[uevent] battery: %s\n", t.text);
+
+			if (last_battery_state != t.action) {
+				last_battery_state = t.action;
+				execUI(TEXT, &t);
+				fprintf(stdout, "[uevent] battery: %s\n", t.text);
+			}
 		}
 	}
 }
