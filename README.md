@@ -17,7 +17,7 @@ A daemon that monitors Linux backlight and PulseAudio volume changes and trigger
   - inotify (file system event notification)
   - udev (device management)
 - PulseAudio sound server
-- X11 or Wayland display server
+- Wayland display server
 
 ## Dependencies
 
@@ -53,11 +53,6 @@ cd ozhium-ollium
 3. Build the project:
 ```bash
 make
-```
-
-4. Install the daemon and UI (optional):
-```bash
-sudo make install
 ```
 
 ## Usage
