@@ -6,6 +6,8 @@ A daemon that monitors Linux backlight and PulseAudio volume changes and trigger
 
 - Real-time backlight brightness monitoring and adjustment
 - Volume level monitoring and control via PulseAudio
+- Network connection monitoring
+- Bluetooth device monitoring
 - On-screen display (OSD) for visual feedback
 - System daemon for background operation
 - Lightweight and efficient implementation
@@ -15,7 +17,7 @@ A daemon that monitors Linux backlight and PulseAudio volume changes and trigger
 
 - Linux operating system with kernel support for:
   - inotify (file system event notification)
-  - udev (device management)
+  - netlink (network and bluetooth event notification)
 - PulseAudio sound server
 - Wayland display server
 
