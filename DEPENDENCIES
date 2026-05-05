@@ -11,7 +11,7 @@ Runtime Dependencies
 --------------------
   Daemon (ozhium-ollium):
     - libpulse-dev    (PulseAudio library)
-    - libudev-dev     (udev library)
+    - libmnl-dev     (netlink library for network/bluetooth events)
 
   UI (ozhium-ollium-ui):
     - gtk4            (GTK+ 4.0)
@@ -20,9 +20,8 @@ Runtime Dependencies
 
 System Requirements
 -------------------
-  - Linux kernel with inotify support
+  - Linux kernel with inotify and netlink support
   - PulseAudio sound server
-  - udev device manager
   - /sys/class/backlight/    (backlight device paths)
   - /sys/class/power_supply/ (battery device paths)
 
@@ -30,16 +29,16 @@ Installation Examples
 ---------------------
 
   Debian/Ubuntu:
-    sudo apt install build-essential pkg-config libpulse-dev libudev-dev libgtk-4-dev libgtk4-layer-shell-dev
+    sudo apt install build-essential pkg-config libpulse-dev libmnl-dev libgtk-4-dev libgtk4-layer-shell-dev
 
   Fedora/RHEL:
-    sudo dnf install gcc make pkg-config pulseaudio-libs-devel systemd-devel gtk4-devel gtk4-layer-shell-devel
+    sudo dnf install gcc make pkg-config pulseaudio-libs-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel
 
   Arch Linux:
-    sudo pacman -S base-devel pkgconf pulseaudio udev gtk4
+    sudo pacman -S base-devel pkgconf pulseaudio libmnl gtk4
 
   openSUSE:
-    sudo zypper install gcc make pkg-config libpulse-devel libudev-devel gtk4-devel gtk4-layer-shell-devel
+    sudo zypper install gcc make pkg-config libpulse-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel
 
 Verification
 ------------
