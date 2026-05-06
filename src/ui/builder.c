@@ -8,19 +8,155 @@
  */
 
 #include "ui/builder.h"
+#include "gtk/gtk.h"
+#include "gtk/gtkshortcut.h"
 #include "shared/common.h"
 #include "ui/config.h"
-#include "ui/config.h"
+#include "ui/window.h"
 #include <stdio.h>
 #include <string.h>
 
-static GtkWidget *sliderWidget = NULL;
-static GtkWidget *labelBefore = NULL;
-static GtkWidget *labelAfter = NULL;
-static GtkWidget *textWidget = NULL;
+static GtkWidget *box = NULL;
+
+const char sldr[] = "slider";
+const char sldrLB[] = "slider-label-before";
+const char sldrLA[] = "slider-label-after";
+const char txt[] = "text";
+
+char *getIconForAction(ACTION action);
+
+/**
+ * Build the substituted label strings for a slider.
+ * Caller is responsible for free()-ing *out_l1 and *out_l2.
+ */
+void buildLabels(const sliderData *s, char **out_l1, char **out_l2);
+
+GtkWidget *initBox(void) {
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_hexpand(box, TRUE);
+    gtk_widget_set_vexpand(box, TRUE);
+    return box;
+}
 
 
-static char *getIconForAction(ACTION action) {
+static void clearBox(void) {
+    GtkWidget *child;
+    while ((child = gtk_widget_get_first_child(box)) != NULL)
+        gtk_box_remove(GTK_BOX(box), child);
+}
+
+void applySlider(const sliderData *s) {
+	char *l1, *l2;
+	buildLabels(s, &l1, &l2);
+
+	for (GtkWidget *child = gtk_widget_get_first_child(box); child != NULL; child = gtk_widget_get_next_sibling(child)) {
+
+		const char *name = gtk_widget_get_name(child);
+		if (strcmp(name, sldr)   == 0) gtk_range_set_value(GTK_RANGE(child), (double)s->current);
+		else if (strcmp(name, sldrLB) == 0) gtk_label_set_text(GTK_LABEL(child), l1);
+		else if (strcmp(name, sldrLA) == 0) gtk_label_set_text(GTK_LABEL(child), l2);
+	}
+
+	free(l1);
+	free(l2);
+}
+
+void applyText(const textData *t) {
+    char *tmp  = strReplace(textConfig.label, "#ico#", getIconForAction(t->action));
+    char *text = strReplace(tmp, "#val#", t->text);
+    free(tmp);
+
+    for (GtkWidget *child = gtk_widget_get_first_child(box); child != NULL; child = gtk_widget_get_next_sibling(child)) {
+        if (strcmp(gtk_widget_get_name(child), txt) == 0) gtk_label_set_text(GTK_LABEL(child), text);
+    }
+
+    free(text);
+}
+
+void buildSlider(const sliderData *s) {
+	clearBox();
+
+	GtkOrientation orient = strcmp(appConfig.orientation, "vertical") == 0 ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL;
+
+	gtk_orientable_set_orientation(GTK_ORIENTABLE(box), orient);
+	gtk_box_set_spacing(GTK_BOX(box), 6);
+	gtk_widget_set_name(box, "slider-box");
+
+	GtkWidget *sliderWidget = gtk_scale_new_with_range(orient, (double)s->min, (double)s->max, s->max / 100.0);
+	gtk_scale_set_draw_value(GTK_SCALE(sliderWidget), FALSE);
+	gtk_widget_set_name(sliderWidget, sldr);
+	gtk_widget_set_hexpand(sliderWidget, TRUE);
+	gtk_widget_set_vexpand(sliderWidget, TRUE);
+	gtk_widget_set_sensitive(sliderWidget, FALSE);
+	gtk_range_set_value(GTK_RANGE(sliderWidget), (double)s->current);
+
+	if (orient == GTK_ORIENTATION_HORIZONTAL) {
+		gtk_widget_set_size_request(sliderWidget, 100, -1);
+		gtk_range_set_inverted(GTK_RANGE(sliderWidget), sliderConfig.invert_dir);
+	} else {
+		gtk_widget_set_size_request(sliderWidget, -1, 100);
+		gtk_range_set_inverted(GTK_RANGE(sliderWidget), !sliderConfig.invert_dir);
+	}
+
+	char *l1, *l2;
+	buildLabels(s, &l1, &l2);
+
+	if (l1 && l1[0]) {
+		GtkWidget *lb = gtk_label_new(l1);
+		gtk_widget_set_name(lb, sldrLB);
+		gtk_box_append(GTK_BOX(box), lb);
+	}
+	gtk_box_append(GTK_BOX(box), sliderWidget);
+	if (l2 && l2[0]) {
+		GtkWidget *la = gtk_label_new(l2);
+		gtk_widget_set_name(la, sldrLA);
+		gtk_box_append(GTK_BOX(box), la);
+	}
+
+	free(l1);
+	free(l2);
+}
+
+void buildText(const textData *t) {
+	clearBox();
+
+	gtk_orientable_set_orientation(GTK_ORIENTABLE(box), GTK_ORIENTATION_HORIZONTAL);
+	gtk_box_set_spacing(GTK_BOX(box), 10);
+	gtk_widget_set_name(box, "text-box");
+
+	GtkWidget *textWidget = gtk_label_new(NULL);
+	gtk_widget_set_name(textWidget, txt);
+	gtk_label_set_xalign(GTK_LABEL(textWidget), 0.5f);
+	gtk_label_set_yalign(GTK_LABEL(textWidget), 0.5f);
+	gtk_widget_set_hexpand(textWidget, TRUE);
+	gtk_widget_set_vexpand(textWidget, TRUE);
+	gtk_box_append(GTK_BOX(box), textWidget); // add first, then apply
+	applyText(t);
+}
+
+void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t) {
+	printf("[updateContent] element=%d\n", el);
+
+	const char *boxName = gtk_widget_get_name(box);
+
+	switch (el) {
+		case SLIDER:
+			if (strcmp(boxName, "slider-box") == 0) applySlider(s);
+			else buildSlider(s);
+			break;
+		case TEXT:
+			if (strcmp(boxName, "text-box") == 0) applyText(t);
+			else buildText(t);
+			break;
+		default:
+			printf("[updateContent] WARNING: unknown element %d\n", el);
+			break;
+	}
+
+	gtk_window_present(GTK_WINDOW(globalWindow));
+}
+
+char *getIconForAction(ACTION action) {
 	switch (action) {
 		case BACKLIGHT:
 			return icons.backlight;
@@ -49,115 +185,25 @@ static char *getIconForAction(ACTION action) {
 		case BLUETOOTH:
 			return icons.bluetooth;
 		default:
-			return "";
+			return " ";
 	}
 }
 
-void applySlider(sliderData *s){
-	gtk_range_set_value(GTK_RANGE(sliderWidget), (double)s->current);
-	gchar *textBuf = g_strdup_printf("%d", (int)(1<s->current?s->current:s->current * 100));
-	gtk_label_set_text(GTK_LABEL(labelBefore), strReplace(strReplace(sliderConfig.label1, "#ico#",getIconForAction(s->action)), "#val#", textBuf));
-	gtk_label_set_text(GTK_LABEL(labelAfter), strReplace(strReplace(sliderConfig.label2, "#ico#",getIconForAction(s->action)), "#val#", textBuf));
+
+void buildLabels(const sliderData *s, char **out_l1, char **out_l2) {
+	gchar *textBuf = g_strdup_printf( "%d", s->current > 1 ? (int)s->current : (int)(s->current * 100));
+	const char *ico = getIconForAction(s->action);
+
+	char *tmp;
+
+	tmp = strReplace(sliderConfig.label1, "#ico#", ico);
+	*out_l1 = strReplace(tmp, "#val#", textBuf);
+	free(tmp);
+
+	tmp = strReplace(sliderConfig.label2, "#ico#", ico);
+	*out_l2 = strReplace(tmp, "#val#", textBuf);
+	free(tmp);
+
 	g_free(textBuf);
 }
 
-void applyText(textData *t){
-	if (textWidget) {
-		gtk_label_set_text(GTK_LABEL(textWidget), strReplace(strReplace(textConfig.label, "#ico#", getIconForAction(t->action)), "#val#", t->text));
-	} else {
-		printf("[APPLY_TEXT] WARNING: textWidget is NULL\n");
-	}
-}
-
-GtkWidget *buildSlider(const sliderData *s) {
-	printf("[buildSlider] Called with: min=%.2f, max=%.2f, current=%.2f, action=%d\n", s->min, s->max, s->current, s->action);
-	
-	GtkOrientation orient = GTK_ORIENTATION_HORIZONTAL;
-	if (strcmp(appConfig.orientation, "vertical") == 0)
-		orient = GTK_ORIENTATION_VERTICAL;
-
-	sliderWidget = gtk_scale_new_with_range(orient, (double)s->min, (double)s->max, (double)(s->max / 100.0));
-	gtk_scale_set_draw_value(GTK_SCALE(sliderWidget), FALSE);
-	gtk_widget_set_name(sliderWidget, "slider");
-	gtk_widget_set_hexpand(sliderWidget, TRUE);
-	gtk_widget_set_vexpand(sliderWidget, TRUE);
-	gtk_widget_set_sensitive(sliderWidget, FALSE);
-
-	
-	// Set minimum size for slider (horizontal: 100px width, vertical: 100px height)
-	if (orient == GTK_ORIENTATION_HORIZONTAL) {
-		gtk_widget_set_size_request(sliderWidget, 100, -1);
-		gtk_range_set_inverted(GTK_RANGE(sliderWidget), sliderConfig.invert_dir);
-	} else {
-		gtk_widget_set_size_request(sliderWidget, -1, 100);
-		gtk_range_set_inverted(GTK_RANGE(sliderWidget), !sliderConfig.invert_dir);
-	}
-
-	labelBefore = gtk_label_new("");
-	labelAfter = gtk_label_new("");
-	gtk_widget_set_name(labelBefore, "slider-label-before");
-	gtk_widget_set_name(labelAfter, "slider-label-after");
-
-	// Apply initial values
-	sliderData *mutableSlider = (sliderData *)s;
-	applySlider(mutableSlider);
-
-	GtkWidget *box = gtk_box_new(orient, 6);
-	
-	gtk_widget_set_name(box, "box");
-	gtk_widget_set_hexpand(box, TRUE);
-	gtk_widget_set_vexpand(box, TRUE);
-	gtk_box_append(GTK_BOX(box), labelBefore);
-	gtk_box_append(GTK_BOX(box), sliderWidget);
-	gtk_box_append(GTK_BOX(box), labelAfter);
-
-	textWidget = NULL;
-
-	return box;
-}
-
-GtkWidget *buildText(const textData *t) {
-	printf("[buildText] Called with: text='%s' action=%d\n", t->text, t->action);
-	
-	char *icon = getIconForAction(t->action);
-	char labelText[512];
-	snprintf(labelText, sizeof(labelText), "%s %s", icon ? icon : "", t->text);
-	
-	textWidget = gtk_label_new(labelText);
-	gtk_widget_set_name(textWidget, "text");
-	gtk_label_set_xalign(GTK_LABEL(textWidget), 0.5);
-	gtk_label_set_yalign(GTK_LABEL(textWidget), 0.5);
-	gtk_widget_set_hexpand(textWidget, TRUE);
-	gtk_widget_set_vexpand(textWidget, TRUE);
-
-	sliderWidget = NULL;
-
-	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-	gtk_widget_set_name(box, "box");
-	gtk_box_append(GTK_BOX(box), textWidget);
-
-	return box;
-}
-
-void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t) {
-	printf("[updateContent] Called with element=%d\n", el);
-	
-	switch (el) {
-		case SLIDER:
-			if (sliderWidget) {
-				printf("[updateContent] SLIDER: min=%.2f, max=%.2f, current=%.2f, action=%d\n",  s->min, s->max, s->current, s->action);
-				
-				sliderData *mutableSlider = (sliderData *)s;
-				applySlider(mutableSlider);
-			}
-			break;
-		case TEXT:
-			if (textWidget) {
-				printf("[updateContent] TEXT: text='%s'\n", t->text);
-				
-				textData *mutableText = (textData *)t;
-				applyText(mutableText);
-			}
-			break;
-	}
-}

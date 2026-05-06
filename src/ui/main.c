@@ -30,12 +30,12 @@ static void onActivate(GtkApplication *app, gpointer data) {
 	applyLayerShell(GTK_WINDOW(globalWindow));
 	setupCss();
 
-	GtkWidget *box;
+	GtkWidget *box = initBox();
 	switch (elementType) {
 		case SLIDER: {
 			printf("[onActivate] Building slider with passed data\n");
 			sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
-			box = buildSlider(&s);
+			buildSlider(&s);
 			break;
 		}
 		case TEXT: {
@@ -44,12 +44,12 @@ static void onActivate(GtkApplication *app, gpointer data) {
 			strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
 			t.text[sizeof(t.text) - 1] = '\0';
 			t.action = currentArgs.action;
-			box = buildText(&t);
+			buildText(&t);
 			break;
 		}
 		default: {
-			textData t = {"", BAT_LOW};
-			box = buildText(&t);
+			textData t = {"UNKNOWN ELEMENT", INVALID};
+			buildText(&t);
 			break;
 		}
 	}

@@ -3,19 +3,22 @@
 #include "shared/common.h"
 #include <gtk/gtk.h>
 
+
+
+GtkWidget *initBox(void);
 /**
  * @brief Build a slider widget with given data
  * @param s Pointer to sliderData containing slider parameters
  * @return GTK widget containing the slider
  */
-GtkWidget *buildSlider(const sliderData *s);
+void buildSlider(const sliderData *s);
 
 /**
  * @brief Build a text/label widget with given data
  * @param t Pointer to textData containing text parameters
  * @return GTK widget containing the text label
  */
-GtkWidget *buildText(const textData *t);
+void buildText(const textData *t);
 
 /**
  * @brief Update existing widget content based on element type
