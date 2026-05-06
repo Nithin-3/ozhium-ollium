@@ -32,7 +32,10 @@ Icons icons = {
 	.batDischarge="󰁾",
 	.batFull="",
 	.batLow="󱊡",
-	.batIdel="󰁹"
+	.batIdel="󰁹",
+	.wifi="",
+	.ethernet="󰈀",
+	.bluetooth="",
 };
 
 SliderConfig sliderConfig = {
@@ -140,6 +143,12 @@ void loadConfig(void) {
 		icons.batDischarge = g_key_file_get_string(keyfile, "icons", "bat-discharge", &error);
 	if (g_key_file_has_key(keyfile, "icons", "bat-idel", NULL))
 		icons.batIdel = g_key_file_get_string(keyfile, "icons", "bat-idel", &error);
+	if (g_key_file_has_key(keyfile, "icons", "wifi", NULL))
+		icons.wifi = g_key_file_get_string(keyfile, "icons", "wifi", &error);
+	if (g_key_file_has_key(keyfile, "icons", "ethernet", NULL))
+		icons.ethernet = g_key_file_get_string(keyfile, "icons", "ethernet", &error);
+	if (g_key_file_has_key(keyfile, "icons", "bluetooth", NULL))
+		icons.bluetooth = g_key_file_get_string(keyfile, "icons", "bluetooth", &error);
 	// ====================
 
 	g_key_file_unref(keyfile);

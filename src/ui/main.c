@@ -34,7 +34,7 @@ static void onActivate(GtkApplication *app, gpointer data) {
 	switch (elementType) {
 		case SLIDER: {
 			printf("[onActivate] Building slider with passed data\n");
-			sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action.slider};
+			sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
 			box = buildSlider(&s);
 			break;
 		}
@@ -43,7 +43,7 @@ static void onActivate(GtkApplication *app, gpointer data) {
 			textData t;
 			strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
 			t.text[sizeof(t.text) - 1] = '\0';
-			t.action = currentArgs.action.text;
+			t.action = currentArgs.action;
 			box = buildText(&t);
 			break;
 		}
@@ -81,11 +81,11 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 	elementType = currentArgs.element;
 	
 	if (globalWindow) {
-		sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action.slider};
+		sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
 		textData t;
 		strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
 		t.text[sizeof(t.text) - 1] = '\0';
-		t.action = currentArgs.action.text;
+		t.action = currentArgs.action;
 		
 		printf("[commandLineHandler] Calling updateContent with proper structs\n");
 		updateContent(elementType, &s, &t);

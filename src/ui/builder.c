@@ -8,6 +8,7 @@
  */
 
 #include "ui/builder.h"
+#include "shared/common.h"
 #include "ui/config.h"
 #include "ui/config.h"
 #include <stdio.h>
@@ -19,7 +20,7 @@ static GtkWidget *labelAfter = NULL;
 static GtkWidget *textWidget = NULL;
 
 
-static char *getIconForAction(SLIDER_ACTION action) {
+static char *getIconForAction(ACTION action) {
 	switch (action) {
 		case BACKLIGHT:
 			return icons.backlight;
@@ -31,13 +32,6 @@ static char *getIconForAction(SLIDER_ACTION action) {
 			return icons.mic;
 		case MIC_MUTE:
 			return icons.micMute;
-		default:
-			return icons.backlight;
-	}
-}
-
-static char *getIconForTextAction(TEXT_ACTION action) {
-	switch (action) {
 		case BAT_LOW:
 			return icons.batLow;
 		case BAT_FULL:
@@ -48,8 +42,14 @@ static char *getIconForTextAction(TEXT_ACTION action) {
 			return icons.batDischarge;
 		case BAT_IDEL:
 			return icons.batIdel;
+		case WIFI:
+			return icons.wifi;
+		case ETHERNET:
+			return icons.ethernet;
+		case BLUETOOTH:
+			return icons.bluetooth;
 		default:
-			return icons.batLow;
+			return "";
 	}
 }
 
@@ -63,7 +63,7 @@ void applySlider(sliderData *s){
 
 void applyText(textData *t){
 	if (textWidget) {
-		gtk_label_set_text(GTK_LABEL(textWidget), strReplace(strReplace(textConfig.label, "#ico#", getIconForTextAction(t->action)), "#val#", t->text));
+		gtk_label_set_text(GTK_LABEL(textWidget), strReplace(strReplace(textConfig.label, "#ico#", getIconForAction(t->action)), "#val#", t->text));
 	} else {
 		printf("[APPLY_TEXT] WARNING: textWidget is NULL\n");
 	}
@@ -119,7 +119,7 @@ GtkWidget *buildSlider(const sliderData *s) {
 GtkWidget *buildText(const textData *t) {
 	printf("[buildText] Called with: text='%s' action=%d\n", t->text, t->action);
 	
-	char *icon = getIconForTextAction(t->action);
+	char *icon = getIconForAction(t->action);
 	char labelText[512];
 	snprintf(labelText, sizeof(labelText), "%s %s", icon ? icon : "", t->text);
 	

@@ -8,10 +8,7 @@
 typedef struct {
 	GUI_ELEMENT element;
 	float min, max, current;
-	union {
-		SLIDER_ACTION slider;
-		TEXT_ACTION text;
-	} action;
+	ACTION action;
 	char text[256];
 } ParsedArgs;
 
@@ -27,14 +24,7 @@ GUI_ELEMENT argToElement(const char *s);
  * @param s String representation ("s0", "backlight", "audio", etc.)
  * @return Corresponding SLIDER_ACTION value
  */
-SLIDER_ACTION argToSliderAction(const char *s);
-
-/**
- * @brief Convert string to text action enum
- * @param s String representation ("t0", "bat_low", "bat_full", etc.)
- * @return Corresponding TEXT_ACTION value
- */
-TEXT_ACTION argToTextAction(const char *s);
+ACTION argToSliderAction(const char *s);
 
 /**
  * @brief Parse command-line arguments

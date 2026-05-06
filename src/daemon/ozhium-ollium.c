@@ -8,14 +8,12 @@
  */
 
 #include "daemon/backLight.h"
-#include "daemon/battery.h"
 #include "daemon/invoke.h"
 #include "daemon/netlink.h"
 #include "daemon/pulse.h"
 #include <dirent.h>
 #include <linux/limits.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/inotify.h>
 #include <unistd.h>
 
@@ -25,9 +23,7 @@ static int mainloop_running = 0;
 
 // inotify callback - monitors backlight and battery changes
 static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
-	(void)api;
-	(void)e;
-	(void)ud;
+	(void)api; (void)e; (void)ud;
 	if (!(events & PA_IO_EVENT_INPUT)) return;
 	if (!mainloop_running) return;
 	char buf[4096];

@@ -18,22 +18,21 @@ GUI_ELEMENT argToElement(const char *s) {
 	return TEXT;
 }
 
-SLIDER_ACTION argToSliderAction(const char *s) {
+ACTION argToAction(const char *s) {
 	if (strcmp(s, "s0") == 0 || strcmp(s, "backlight") == 0) return BACKLIGHT;
 	if (strcmp(s, "s1") == 0 || strcmp(s, "audio") == 0) return AUDIO;
 	if (strcmp(s, "s2") == 0 || strcmp(s, "audio_mute") == 0) return AUDIO_MUTE;
 	if (strcmp(s, "s3") == 0 || strcmp(s, "mic") == 0) return MIC;
 	if (strcmp(s, "s4") == 0 || strcmp(s, "mic_mute") == 0) return MIC_MUTE;
-	return BACKLIGHT;
-}
-
-TEXT_ACTION argToTextAction(const char *s) {
 	if (strcmp(s, "t0") == 0 || strcmp(s, "bat_low") == 0) return BAT_LOW;
 	if (strcmp(s, "t1") == 0 || strcmp(s, "bat_full") == 0) return BAT_FULL;
 	if (strcmp(s, "t2") == 0 || strcmp(s, "bat_charge") == 0) return BAT_CHARGE;
 	if (strcmp(s, "t3") == 0 || strcmp(s, "bat_discharge") == 0) return BAT_DISCHARGE;
 	if (strcmp(s, "t4") == 0 || strcmp(s, "bat_idel") == 0) return BAT_IDEL;
-	return BAT_LOW;
+	if (strcmp(s, "t5") == 0 || strcmp(s, "wifi") == 0) return WIFI;
+	if (strcmp(s, "t6") == 0 || strcmp(s, "ethernet") == 0) return ETHERNET;
+	if (strcmp(s, "t7") == 0 || strcmp(s, "bluetooth") == 0) return BLUETOOTH;
+	return INVALID;
 }
 
 int parseArgs(int argc, char *argv[], ParsedArgs *args) {
@@ -65,11 +64,7 @@ int parseArgs(int argc, char *argv[], ParsedArgs *args) {
 				args->current = atof(optarg);
 				break;
 			case 'a':
-				if (args->element == SLIDER) {
-					args->action.slider = argToSliderAction(optarg);
-				} else {
-					args->action.text = argToTextAction(optarg);
-				}
+				args->action = argToAction(optarg);
 				break;
 			case 't':
 				strncpy(args->text, optarg, sizeof(args->text) - 1);

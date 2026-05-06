@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * ozhium-ollium.c - Main daemon entry point
+ * ozhium-ollium.c - netlink socket monitoring
  */
 
 #include "daemon/netlink.h"
@@ -28,7 +28,7 @@ static pa_mainloop_api *netlink_api = NULL;
 
 static char last_net_state[128] = {0};
 static char last_bt_state[32] = {0};
-static TEXT_ACTION last_battery_state;
+static ACTION last_battery_state;
 
 
 static void netlink_recv(int fd) {
@@ -49,16 +49,29 @@ static void netlink_recv(int fd) {
 			while (RTA_OK(rta, rtl)) {
 				if (rta->rta_type == IFLA_IFNAME) {
 					char *ifname = (char *)RTA_DATA(rta);
-					if (strncmp(ifname, "wlan", 4) == 0 || strncmp(ifname, "wlp",  3) == 0 || strncmp(ifname, "eth",  3) == 0 || strncmp(ifname, "en",   2) == 0) {
+					if (strncmp(ifname, "wlan", 4) == 0 || strncmp(ifname, "wlp",  3) == 0) {
 
 						textData t = {0};
+						t.action = WIFI;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, (ifi->ifi_flags & IFF_UP) ? "up" : "down");
 
 						if (strcmp(last_net_state, t.text) != 0) {
 							strncpy(last_net_state, t.text, sizeof(last_net_state) - 1);
-							execUI(TEXT, &t);
 							fprintf(stdout, "[netlink] net: %s\n", t.text);
+							execUI(TEXT, &t);
 						}
+					}
+					if(strncmp(ifname, "eth",  3) == 0 || strncmp(ifname, "en",   2) == 0){
+						textData t = {0};
+						t.action = ETHERNET;
+						snprintf(t.text, sizeof(t.text), "%s %s", ifname, (ifi->ifi_flags & IFF_UP) ? "up" : "down");
+
+						if (strcmp(last_net_state, t.text) != 0) {
+							strncpy(last_net_state, t.text, sizeof(last_net_state) - 1);
+							fprintf(stdout, "[netlink] net: %s\n", t.text);
+							execUI(TEXT, &t);
+						}
+
 					}
 				}
 				rta = RTA_NEXT(rta, rtl);
@@ -91,6 +104,7 @@ static void uevent_recv(int fd) {
 
 	if (strcmp(subsystem, "bluetooth") == 0) {
 		textData t = {0};
+		t.action = BLUETOOTH;
 		snprintf(t.text, sizeof(t.text), "bluetooth %s", action);
 
 		if (strcmp(last_bt_state, t.text) != 0) {
@@ -107,7 +121,6 @@ static void uevent_recv(int fd) {
 			if (last_battery_state != t.action) {
 				last_battery_state = t.action;
 				execUI(TEXT, &t);
-				fprintf(stdout, "[uevent] battery: %s\n", t.text);
 			}
 		}
 	}

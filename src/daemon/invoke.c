@@ -9,6 +9,7 @@
 
 #include "daemon/invoke.h"
 #include "daemon/tool.h"
+#include "shared/common.h"
 #include <linux/limits.h>
 #include <signal.h>
 #include <stdio.h>
@@ -33,7 +34,7 @@ static void initSigchld(void) {
 	}
 }
 
-const char *sliderActionToString(SLIDER_ACTION a) {
+const char *actionToString(ACTION a) {
 	switch (a) {
 		case BACKLIGHT:
 			return "s0";
@@ -45,13 +46,6 @@ const char *sliderActionToString(SLIDER_ACTION a) {
 			return "s3";
 		case MIC_MUTE:
 			return "s4";
-		default:
-			return "s0";
-	}
-}
-
-const char *textActionToString(TEXT_ACTION a) {
-	switch (a) {
 		case BAT_LOW:
 			return "t0";
 		case BAT_FULL:
@@ -62,8 +56,14 @@ const char *textActionToString(TEXT_ACTION a) {
 			return "t3";
 		case BAT_IDEL:
 			return "t4";
+		case WIFI:
+			return "t5";
+		case ETHERNET:
+			return "t6";
+		case BLUETOOTH:
+			return "t7";
 		default:
-			return "t0";
+			return "?";
 	}
 }
 
@@ -105,7 +105,7 @@ void execUI(const GUI_ELEMENT element, void *data) {
 					     snprintf(minBuf, sizeof(minBuf), "%.6f", s->min);
 					     snprintf(maxBuf, sizeof(maxBuf), "%.6f", s->max);
 					     snprintf(curBuf, sizeof(curBuf), "%.6f", s->current);
-					     strncpy(actionBuf, sliderActionToString(s->action), sizeof(actionBuf));
+					     strncpy(actionBuf, actionToString(s->action), sizeof(actionBuf));
 
 					     char *args[] = {uiBinary, "--element", elementBuf, "--min",
 						     minBuf,   "--max",     maxBuf,     "--current",
@@ -118,7 +118,7 @@ void execUI(const GUI_ELEMENT element, void *data) {
 				   textData *t = (textData *)data;
 				   fprintf(stderr, "[execUI child] TEXT: text=%s action=%d\n", t->text, t->action);
 				   char actionBuf[8];
-				   strncpy(actionBuf, textActionToString(t->action), sizeof(actionBuf));
+				   strncpy(actionBuf, actionToString(t->action), sizeof(actionBuf));
 				   char *args[] = {uiBinary, "--element", elementBuf, "--text", t->text, "--action", actionBuf, NULL};
 				   execv(uiBinary, args);
 				   break;
