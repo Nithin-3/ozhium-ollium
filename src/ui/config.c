@@ -24,17 +24,17 @@ AppConfig appConfig = {
 
 Icons icons = {
 	.backlight = "",
-	.volume = "",
+	.volume = " ",
 	.volumeMute = "󰖁",
 	.mic = "󰍬",
-	.micMute = "",
+	.micMute = " ",
 	.batCharge = "󰂄",
-	.batDischarge="󰁾",
-	.batFull="",
+	.batDischarge ="󰁾",
+	.batFull=" ",
 	.batLow="󱊡",
 	.batIdel="󰁹",
-	.wifi="",
-	.ethernet="󰈀",
+	.wifi=" ",
+	.ethernet="󰈀 ",
 	.bluetooth="",
 };
 
