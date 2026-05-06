@@ -54,7 +54,7 @@ int main() {
 	int in_fd = inotify_init();
 	if (in_fd < 0) { perror("inotify init"); pa_mainloop_free(ml); return 1; }
 
-	if (findBacklightPaths(bri_path, max_path, PATH_MAX)) {
+	if (getBacklightPaths(bri_path, max_path, PATH_MAX)) {
 		fprintf(stdout, "could not find backlight path\n");
 		fflush(stdout);
 	}else {

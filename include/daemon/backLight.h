@@ -23,4 +23,4 @@ int getBacklight(sliderData *s);
  * @param size Size of the path buffers
  * @return 0 on success, 1 if no backlight device found
  */
-int findBacklightPaths(char *bri_path, char *max_path, size_t size);
+int getBacklightPaths(char *bri_path, char *max_path, size_t size);

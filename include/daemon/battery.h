@@ -17,4 +17,4 @@ int getBattery(textData *t);
  * @param sz Size of the path buffers
  * @return 0 on success, 1 if no battery found
  */
-int findBatteryPaths(char *cap, char *sta, size_t sz);
+int getBatteryPaths(char *cap, char *sta, size_t sz);

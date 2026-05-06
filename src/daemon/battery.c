@@ -18,7 +18,7 @@
 static char batSta_path[PATH_MAX] = {0};
 static char batCap_path[PATH_MAX] = {0};
 
-int findBatteryPaths(char *cap, char *sta, size_t sz) {
+int getBatteryPaths(char *cap, char *sta, size_t sz) {
     DIR *d = opendir("/sys/class/power_supply/");
     if (!d) return -1;
     struct dirent *de;
@@ -32,9 +32,10 @@ int findBatteryPaths(char *cap, char *sta, size_t sz) {
     closedir(d);
     return 1;
 }
+
 int getBattery(textData *t) {
 	if (batSta_path[0] == '\0') {
-		if (findBatteryPaths(batCap_path, batSta_path, PATH_MAX))
+		if (getBatteryPaths(batCap_path, batSta_path, PATH_MAX))
 			return 1;
 	}
 

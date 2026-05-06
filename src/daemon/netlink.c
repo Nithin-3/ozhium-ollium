@@ -31,7 +31,8 @@ static char last_bt_state[32] = {0};
 static ACTION last_battery_state;
 
 
-static void netlink_recv(int fd) {
+// handle changes on wi-fi and ethernet
+void netlink_recv(int fd) {
 	char buf[8192];
 	struct sockaddr_nl addr;
 	socklen_t addr_len = sizeof(addr);
@@ -49,7 +50,7 @@ static void netlink_recv(int fd) {
 			while (RTA_OK(rta, rtl)) {
 				if (rta->rta_type == IFLA_IFNAME) {
 					char *ifname = (char *)RTA_DATA(rta);
-					if (strncmp(ifname, "wlan", 4) == 0 || strncmp(ifname, "wlp",  3) == 0) {
+					if (strncmp(ifname, "wlan", 4) == 0 || strncmp(ifname, "wlp",  3) == 0) { // wi-fi
 
 						textData t = {0};
 						t.action = WIFI;
@@ -61,7 +62,8 @@ static void netlink_recv(int fd) {
 							execUI(TEXT, &t);
 						}
 					}
-					if(strncmp(ifname, "eth",  3) == 0 || strncmp(ifname, "en",   2) == 0){
+
+					if(strncmp(ifname, "eth",  3) == 0 || strncmp(ifname, "en",   2) == 0){ // ethernet
 						textData t = {0};
 						t.action = ETHERNET;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, (ifi->ifi_flags & IFF_UP) ? "up" : "down");
@@ -82,7 +84,8 @@ static void netlink_recv(int fd) {
 }
 
 
-static void uevent_recv(int fd) {
+// handle changes on bluetooth and battery
+void uevent_recv(int fd) {
 	char buf[8192];
 	ssize_t len = read(fd, buf, sizeof(buf) - 1);
 	if (len <= 0) return;
@@ -102,7 +105,7 @@ static void uevent_recv(int fd) {
 
 	fprintf(stdout, "[uevent] subsystem=%s action=%s\n", subsystem, action);
 
-	if (strcmp(subsystem, "bluetooth") == 0) {
+	if (strcmp(subsystem, "bluetooth") == 0) { // bluetooth
 		textData t = {0};
 		t.action = BLUETOOTH;
 		snprintf(t.text, sizeof(t.text), "bluetooth %s", action);
@@ -110,10 +113,9 @@ static void uevent_recv(int fd) {
 		if (strcmp(last_bt_state, t.text) != 0) {
 			strncpy(last_bt_state, t.text, sizeof(last_bt_state) - 1);
 			execUI(TEXT, &t);
-			fprintf(stdout, "[uevent] bluetooth: %s\n", action);
 		}
 
-	} else if (strcmp(subsystem, "power_supply") == 0) {
+	} else if (strcmp(subsystem, "power_supply") == 0) { // battery
 		if (strcmp(action, "change") == 0) {
 			textData t = {0};
 			getBattery(&t);
@@ -127,13 +129,13 @@ static void uevent_recv(int fd) {
 }
 
 
-static void netlink_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
+void netlink_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api; (void)e; (void)ud;
 	if (!(events & PA_IO_EVENT_INPUT)) return;
 	netlink_recv(fd);
 }
 
-static void uevent_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
+void uevent_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api; (void)e; (void)ud;
 	if (!(events & PA_IO_EVENT_INPUT)) return;
 	uevent_recv(fd);

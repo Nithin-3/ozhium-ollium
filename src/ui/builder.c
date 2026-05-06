@@ -145,8 +145,7 @@ void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t) {
 	switch (el) {
 		case SLIDER:
 			if (sliderWidget) {
-				printf("[updateContent] SLIDER: min=%.2f, max=%.2f, current=%.2f, action=%d\n", 
-					s->min, s->max, s->current, s->action);
+				printf("[updateContent] SLIDER: min=%.2f, max=%.2f, current=%.2f, action=%d\n",  s->min, s->max, s->current, s->action);
 				
 				sliderData *mutableSlider = (sliderData *)s;
 				applySlider(mutableSlider);

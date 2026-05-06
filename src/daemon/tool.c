@@ -16,12 +16,12 @@
 
 const char *findSelfDir() {
 	static char dir[PATH_MAX];
-	ssize_t len = readlink("/proc/self/exe", dir, sizeof(dir) - 1);
+	ssize_t len = readlink("/proc/self/exe", dir, sizeof(dir) - 1); // find the daemon execution path in your system
 	if (len == -1) return ".";
 	dir[len] = '\0';
 	char *slash = strrchr(dir, '/');
 	if (slash) *slash = '\0';
-	return dir;
+	return dir; // directory of this daemon
 }
 
 int catFile(const char *p, int *v) {
@@ -36,9 +36,14 @@ int catFileStr(const char *p, char *v, size_t maxLen) {
     FILE *f = fopen(p, "r");
     if (!f) return 0;
     char fmt[16];
-    snprintf(fmt, sizeof(fmt), "%%%zus", maxLen - 1);
-    int r = fscanf(f, fmt, v);
+    
+    // Build a format string like "%Ns" where N = maxLen - 1
+    // "%%" -> literal '%'
+    // "%zu" -> prints size_t value (maxLen - 1)
+    // "s" -> completes the format specifier for string input
+    snprintf(fmt, sizeof(fmt), "%%%zus", maxLen - 1); // e.g: "%20s"
+    int r = fscanf(f, fmt, v);  // e.g: read to 20 char
     fclose(f);
-    return r == 1;
+    return r == 1; // false on EOF or 0 (error)
 }
 

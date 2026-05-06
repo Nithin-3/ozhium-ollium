@@ -18,7 +18,7 @@
 char bri_path[PATH_MAX] = {0};
 char max_path[PATH_MAX] = {0};
 
-int findBacklightPaths(char *bri_path, char *max_path, size_t size) {
+int getBacklightPaths(char *bri_path, char *max_path, size_t size) {
 	DIR *d = opendir("/sys/class/backlight/");
 	if (!d)
 		return 1;
@@ -40,7 +40,7 @@ int findBacklightPaths(char *bri_path, char *max_path, size_t size) {
 
 int getBacklight(sliderData *s) {
     if (bri_path[0] == '\0') {
-        if (findBacklightPaths(bri_path, max_path, sizeof(bri_path)))
+        if (getBacklightPaths(bri_path, max_path, sizeof(bri_path)))
             return 1;
     }
     int crnt, max;
