@@ -15,6 +15,7 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <linux/if_arp.h>
+#include <linux/input.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -25,10 +26,6 @@ static int uevent_fd  = -1;
 static pa_io_event *netlink_io = NULL;
 static pa_io_event *uevent_io  = NULL;
 static pa_mainloop_api *netlink_api = NULL;
-
-static char last_net_state[128] = {0};
-static char last_bt_state[32] = {0};
-static ACTION last_battery_state;
 
 
 // handle changes on wi-fi and ethernet
@@ -62,22 +59,14 @@ void netlink_recv(int fd) {
 						textData t = {0};
 						t.action = WIFI;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
-
-						if (strcmp(last_net_state, t.text) != 0) {
-							strncpy(last_net_state, t.text, sizeof(last_net_state) - 1);
-							fprintf(stdout, "[netlink] net: %s\n", t.text);
-							execUI(TEXT, &t);
-						}
+						fprintf(stdout, "[netlink] net: %s\n", t.text);
+						execUI(TEXT, &t);
 					} else if (ifi->ifi_type == ARPHRD_ETHER) { // ethernet
 						textData t = {0};
 						t.action = ETHERNET;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
-
-						if (strcmp(last_net_state, t.text) != 0) {
-							strncpy(last_net_state, t.text, sizeof(last_net_state) - 1);
-							fprintf(stdout, "[netlink] net: %s\n", t.text);
-							execUI(TEXT, &t);
-						}
+						fprintf(stdout, "[netlink] net: %s\n", t.text);
+						execUI(TEXT, &t);
 					}
 				}
 				rta = RTA_NEXT(rta, rtl);
@@ -95,40 +84,87 @@ void uevent_recv(int fd) {
 	if (len <= 0) return;
 	buf[len] = '\0';
 
-	char action[32]    = {0};
+	char action[32] = {0};
 	char subsystem[32] = {0};
+	char power_supply_type[8] = {0};
+	char name[128] = {0};
+	unsigned int power_supply_capacity;
+	struct input_id {
+		unsigned int bus;
+		unsigned int vendor;
+		unsigned int product;
+		unsigned int version;
+	} product = {0};
 
 	char *p = buf;
 	p += strlen(p) + 1;
 
 	while (p < buf + len) {
-		if (strncmp(p, "ACTION=",    7)  == 0) strncpy(action,    p + 7,  sizeof(action)    - 1);
+		if (strncmp(p, "ACTION=",    7)  == 0) strncpy(action,    p + 7,  sizeof(action) - 1);
 		else if (strncmp(p, "SUBSYSTEM=", 10) == 0) strncpy(subsystem, p + 10, sizeof(subsystem) - 1);
+		else if (strncmp(p, "DEVNAME=",  8)  == 0) strncpy(name,   p + 8,  sizeof(name) - 1);
+		else if (strncmp(p, "NAME=",    5)  == 0) strncpy(name,      p + 5,  sizeof(name) - 1);
+		else if (strncmp(p, "HID_NAME=",    9)  == 0) strncpy(name,      p + 9,  sizeof(name) - 1);
+		else if (strncmp(p, "POWER_SUPPLY_TYPE=", 18) == 0) strncpy(power_supply_type, p + 18, sizeof(power_supply_type) - 1);
+		else if (strncmp(p, "POWER_SUPPLY_CAPACITY=", 22) == 0) sscanf(p + 22, "%u", &power_supply_capacity);
+		else if (strncmp(p, "PRODUCT=",    8)  == 0)
+			sscanf(p + 8, "%x/%x/%x/%x", &product.bus, &product.vendor, &product.product, &product.version); // NOTE: input event -> bus/vendor/product/version : these are the value PRODUCT= have
+		// fprintf(stdout, "%s\n",p);
 		p += strlen(p) + 1;
 	}
+	// fprintf(stdout, "\n");
 
-	fprintf(stdout, "[uevent] subsystem=%s action=%s\n", subsystem, action);
-
-	if (strcmp(subsystem, "bluetooth") == 0) { // bluetooth
+	// if (0 == strcmp(subsystem, "bluetooth")) {
+	// 	textData t = {0};
+	// 	t.action = BLUETOOTH;
+	// 	snprintf(t.text, sizeof(t.text), "bluetooth %s", action);
+	// 	execUI(TEXT, &t);
+	// 	return;
+	// }
+	
+	if (0 == strcmp(subsystem, "power_supply") && 0 == strcmp(action, "change") && 0 == strcmp(power_supply_type, "Battery")) {
+		sleep(1);
 		textData t = {0};
-		t.action = BLUETOOTH;
-		snprintf(t.text, sizeof(t.text), "bluetooth %s", action);
+		static ACTION act = INVALID;
+		getBattery(&t);
+		if (t.action == act || (BAT_DISCHARGE == t.action && power_supply_capacity > 20)) return;	
+		act = t.action;
+		execUI(TEXT, &t);
+                return;
+	}
 
-		if (strcmp(last_bt_state, t.text) != 0) {
-			strncpy(last_bt_state, t.text, sizeof(last_bt_state) - 1);
-			execUI(TEXT, &t);
-		}
+	if (0 == strcmp(subsystem, "block") && name[0]) {
+		fprintf(stdout, "[usb] device=%s %s\n",name, action);
+		textData t = {0};
+		t.action = INVALID;
+		snprintf(t.text, sizeof(t.text), "[block] %s %s", name, action);
+		execUI(TEXT, &t);
+		return;
+	}
 
-	} else if (strcmp(subsystem, "power_supply") == 0) { // battery
-		if (strcmp(action, "change") == 0) {
-			textData t = {0};
-			getBattery(&t);
+	if (0 == strcmp(subsystem, "hid") && name[0]) {
+		fprintf(stdout, "[hid] %s %s\n", name, action);
+		textData t = {0};
+		t.action = INVALID;
+		snprintf(t.text, sizeof(t.text), "[HID] %s %s", name, action);
+		execUI(TEXT, &t);
+		return;
+	}
 
-			if (last_battery_state != t.action) {
-				last_battery_state = t.action;
+	if (0 == strcmp(subsystem, "input") && name[0]) {
+		switch (product.bus) {
+			case BUS_BLUETOOTH: // bluetooth bus -> 0x05 '5'
+				fprintf(stdout, "[input] %s %s\n", name, action);
+				textData t = {0};
+				t.action = BLUETOOTH;
+				snprintf(t.text, sizeof(t.text), "%s %s", name, action);
 				execUI(TEXT, &t);
-			}
+				break;
+			case 0: break;
+			default:
+				fprintf(stdout, "%d this bus not handle",product.bus);
 		}
+		return;
 	}
 }
 
