@@ -14,7 +14,7 @@
 #include <asm/types.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
-#include <net/if.h>
+#include <linux/if_arp.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -47,33 +47,37 @@ void netlink_recv(int fd) {
 			struct rtattr    *rta = IFLA_RTA(ifi);
 			int rtl = IFLA_PAYLOAD(nlh);
 
+			if (!(ifi->ifi_change & (IFF_UP | IFF_RUNNING | IFF_LOWER_UP))) {
+				nlh = NLMSG_NEXT(nlh, len);
+				continue;
+			}
+
 			while (RTA_OK(rta, rtl)) {
 				if (rta->rta_type == IFLA_IFNAME) {
 					char *ifname = (char *)RTA_DATA(rta);
-					if (strncmp(ifname, "wlan", 4) == 0 || strncmp(ifname, "wlp",  3) == 0) { // wi-fi
+					int connected = (ifi->ifi_flags & IFF_RUNNING) && (ifi->ifi_flags & IFF_LOWER_UP);
+					const char *state = connected ? "connected" : "disconnected";
 
+					if (ifi->ifi_type == ARPHRD_IEEE80211) { // wi-fi
 						textData t = {0};
 						t.action = WIFI;
-						snprintf(t.text, sizeof(t.text), "%s %s", ifname, (ifi->ifi_flags & IFF_UP) ? "up" : "down");
+						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
 
 						if (strcmp(last_net_state, t.text) != 0) {
 							strncpy(last_net_state, t.text, sizeof(last_net_state) - 1);
 							fprintf(stdout, "[netlink] net: %s\n", t.text);
 							execUI(TEXT, &t);
 						}
-					}
-
-					if(strncmp(ifname, "eth",  3) == 0 || strncmp(ifname, "en",   2) == 0){ // ethernet
+					} else if (ifi->ifi_type == ARPHRD_ETHER) { // ethernet
 						textData t = {0};
 						t.action = ETHERNET;
-						snprintf(t.text, sizeof(t.text), "%s %s", ifname, (ifi->ifi_flags & IFF_UP) ? "up" : "down");
+						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
 
 						if (strcmp(last_net_state, t.text) != 0) {
 							strncpy(last_net_state, t.text, sizeof(last_net_state) - 1);
 							fprintf(stdout, "[netlink] net: %s\n", t.text);
 							execUI(TEXT, &t);
 						}
-
 					}
 				}
 				rta = RTA_NEXT(rta, rtl);

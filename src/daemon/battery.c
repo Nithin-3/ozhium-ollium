@@ -47,9 +47,9 @@ int getBattery(textData *t) {
 	snprintf(t->text, sizeof(t->text), "%d%%", cap);
 
 	if (strcmp(buff, "Charging") == 0) t->action = BAT_CHARGE;
+	else if (cap < 21) t->action = BAT_LOW;
 	else if (strcmp(buff, "Discharging") == 0) t->action = BAT_DISCHARGE;
 	else if (strcmp(buff, "Full") == 0) t->action = BAT_FULL;
-	else if (cap < 21) t->action = BAT_LOW;
 	else t->action = BAT_IDEL;
 
 	return 0;
