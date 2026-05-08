@@ -81,3 +81,9 @@ $(OBJ_DIR)/ui:
 
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET) $(UI_TARGET)
+
+format:
+	find src/ include/ -name "*.[ch]" | xargs clang-format -i
+
+check-format:
+	find src/ include/ -name "*.[ch]" | xargs clang-format --dry-run --Werror

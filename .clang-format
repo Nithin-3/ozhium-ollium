@@ -1,0 +1,61 @@
+# .clang-format
+# Code style for ozhium-ollium (LLVM based)
+Language: C
+BasedOnStyle: LLVM
+
+# Indentation — override LLVM's 2-space default
+UseTab: Always
+TabWidth: 8
+IndentWidth: 8
+IndentCaseLabels: true
+
+# Braces — LLVM uses Attach already, keeping it
+BreakBeforeBraces: Attach
+
+# Pointers — override LLVM's Left to Right
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+# Spaces
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesInParentheses: false
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpaceAfterLogicalNot: false
+SpacesInSquareBrackets: false
+
+# Lines
+ColumnLimit: 0
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+# Includes — override LLVM's sorting
+SortIncludes: Never
+IncludeBlocks: Preserve
+
+# Functions
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+
+# Arguments & Parameters
+AlignAfterOpenBracket: Align
+BinPackArguments: true
+BinPackParameters: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# Alignment
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignTrailingComments: true
+
+# Comments
+ReflowComments: false
+SpacesBeforeTrailingComments: 2
+
+# Misc
+Cpp11BracedListStyle: false
