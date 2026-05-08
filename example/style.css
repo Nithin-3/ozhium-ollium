@@ -1,0 +1,87 @@
+
+window {
+    background-color: transparent;
+    /* border-radius: 12px; */
+    /* border: 1px solid #3c3c3c; */
+}
+
+#slider {
+    min-width: 12px;
+    min-height: 250px;
+    /* background:#f0f0f0aa; */
+}
+#slider-box{
+
+	padding:0.4rem;
+    background:#000000aa;
+}
+ #text-box{
+	 background:#000000;
+	 color:#fff;
+	 border: 2px solid #cb0808;
+
+ }
+
+#slider > trough {
+    background-color: #262626;
+    border-radius: 6px;
+    border: 1px solid #3c3c3c;
+}
+
+#slider > trough > highlight {
+    background: linear-gradient(to top, #08bdba, #42d4c8);
+    border-radius: 6px;
+}
+
+#slider > trough > fill {
+    background: linear-gradient(to top, #08bdba, #42d4c8);
+    border-radius: 6px;
+}
+
+/* Slider thumb */
+#slider > trough > slider {
+    min-width: 20px;
+    min-height: 20px;
+    background: linear-gradient(135deg, #525252, #787878);
+    border: 2px solid #08bdba;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+#slider > trough > slider:hover {
+    background: linear-gradient(135deg, #6c6c6c, #909090);
+    box-shadow: 0 3px 8px rgba(8, 189, 186, 0.3);
+}
+
+#slider > trough > slider:active {
+    background: linear-gradient(135deg, #424242, #686868);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+label {
+    color: #f0f0f0;
+    font-family: "Sans", "Segoe UI", system-ui;
+    font-size: 16px;
+}
+
+label.title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+label.icon {
+    font-size: 24px;
+}
+
+#slider-label-before,
+#slider-label-after {
+    color: #8c8cff;
+    font-size: 14px;
+}
+
+#text{
+    color: #8c8c8c;
+    font-size: 20px;
+    margin: 1rem;
+}
