@@ -8,7 +8,7 @@
  */
 
 #include "daemon/invoke.h"
-#include "daemon/pulse.h"
+#include "daemon/monitors/pulse.h"
 #include <pulse/pulseaudio.h>
 #include <stdio.h>
 

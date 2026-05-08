@@ -35,7 +35,7 @@ UI_TARGET   = ozhium-ollium-ui
 
 OBJ_DIR = out
 
-DAEMON_SRC = src/daemon/ozhium-ollium.c src/daemon/invoke.c src/daemon/battery.c src/daemon/pulse.c src/daemon/tool.c src/daemon/backLight.c src/daemon/netlink.c
+DAEMON_SRC = src/daemon/ozhium-ollium.c src/daemon/invoke.c src/daemon/utils/battery.c src/daemon/monitors/pulse.c src/daemon/utils/tool.c src/daemon/utils/backlight.c src/daemon/monitors/netlink.c src/daemon/monitors/inotify.c
 UI_SRC = src/ui/main.c src/ui/config.c src/ui/window.c src/ui/builder.c src/ui/args.c src/ui/tool.c
 
 .PHONY: all clean
@@ -43,7 +43,7 @@ UI_SRC = src/ui/main.c src/ui/config.c src/ui/window.c src/ui/builder.c src/ui/a
 all: $(TARGET) $(UI_TARGET)
 
 # Daemon target - links with libudev and libpulse
-$(TARGET): $(OBJ_DIR)/daemon/ozhium-ollium.o $(OBJ_DIR)/daemon/invoke.o $(OBJ_DIR)/daemon/battery.o $(OBJ_DIR)/daemon/pulse.o $(OBJ_DIR)/daemon/tool.o $(OBJ_DIR)/daemon/backLight.o $(OBJ_DIR)/daemon/netlink.o
+$(TARGET): $(OBJ_DIR)/daemon/ozhium-ollium.o $(OBJ_DIR)/daemon/invoke.o $(OBJ_DIR)/daemon/utils/battery.o $(OBJ_DIR)/daemon/monitors/pulse.o $(OBJ_DIR)/daemon/utils/tool.o $(OBJ_DIR)/daemon/utils/backlight.o $(OBJ_DIR)/daemon/monitors/netlink.o $(OBJ_DIR)/daemon/monitors/inotify.o
 	$(CC) $^ -o $@ -lpulse
 
 # UI target - links with GTK4 and gtk4-layer-shell
@@ -56,25 +56,22 @@ $(OBJ_DIR)/daemon/ozhium-ollium.o: src/daemon/ozhium-ollium.c | $(OBJ_DIR)/daemo
 $(OBJ_DIR)/daemon/invoke.o: src/daemon/invoke.c | $(OBJ_DIR)/daemon
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJ_DIR)/daemon/battery.o: src/daemon/battery.c | $(OBJ_DIR)/daemon
+$(OBJ_DIR)/daemon/monitors/%.o: src/daemon/monitors/%.c | $(OBJ_DIR)/daemon/monitors
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-$(OBJ_DIR)/daemon/pulse.o: src/daemon/pulse.c | $(OBJ_DIR)/daemon
-	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
-
-$(OBJ_DIR)/daemon/tool.o: src/daemon/tool.c | $(OBJ_DIR)/daemon
-	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
-
-$(OBJ_DIR)/daemon/backLight.o: src/daemon/backLight.c | $(OBJ_DIR)/daemon
-	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
-
-$(OBJ_DIR)/daemon/netlink.o: src/daemon/netlink.c | $(OBJ_DIR)/daemon
+$(OBJ_DIR)/daemon/utils/%.o: src/daemon/utils/%.c | $(OBJ_DIR)/daemon/utils
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 $(OBJ_DIR)/ui/%.o: src/ui/%.c | $(OBJ_DIR)/ui
 	$(CC) $(CFLAGS) $(GTK_CFLAGS) -MMD -MP -c $< -o $@
 
 $(OBJ_DIR)/daemon:
+	mkdir -p $@
+
+$(OBJ_DIR)/daemon/monitors:
+	mkdir -p $@
+
+$(OBJ_DIR)/daemon/utils:
 	mkdir -p $@
 
 $(OBJ_DIR)/ui:

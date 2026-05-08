@@ -12,7 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include "daemon/tool.h"
+#include "daemon/utils/tool.h"
 
 const char *findSelfDir() {
 	static char dir[PATH_MAX];

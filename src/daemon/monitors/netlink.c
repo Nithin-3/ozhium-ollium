@@ -7,8 +7,8 @@
  * ozhium-ollium.c - netlink socket monitoring
  */
 
-#include "daemon/netlink.h"
-#include "daemon/battery.h"
+#include "daemon/monitors/netlink.h"
+#include "daemon/utils/battery.h"
 #include "daemon/invoke.h"
 #include "shared/common.h"
 #include <asm/types.h>
@@ -96,7 +96,6 @@ void netlinkRecv(int fd) {
 }
 
 
-// handle changes on bluetooth and battery
 void ueventRecv(int fd) {
 	char buf[8192];
 	ssize_t len = read(fd, buf, sizeof(buf) - 1);

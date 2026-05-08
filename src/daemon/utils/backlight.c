@@ -4,7 +4,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * backLight.c - Backlight monitoring
+ * backlight.c - Backlight monitoring
  */
 
 #include <dirent.h>
@@ -12,8 +12,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include "daemon/backLight.h"
-#include "daemon/tool.h"
+#include "daemon/utils/backlight.h"
+#include "daemon/utils/tool.h"
 
 char bri_path[PATH_MAX] = {0};
 char max_path[PATH_MAX] = {0};

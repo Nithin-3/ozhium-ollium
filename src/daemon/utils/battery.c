@@ -7,9 +7,9 @@
  * battery.c - Battery monitoring
  */
 
-#include "daemon/battery.h"
+#include "daemon/utils/battery.h"
 #include "shared/common.h"
-#include "daemon/tool.h"
+#include "daemon/utils/tool.h"
 #include <dirent.h>
 #include <linux/limits.h>
 #include <stdio.h>

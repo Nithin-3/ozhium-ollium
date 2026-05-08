@@ -8,7 +8,7 @@
  */
 
 #include "daemon/invoke.h"
-#include "daemon/tool.h"
+#include "daemon/utils/tool.h"
 #include "shared/common.h"
 #include <linux/limits.h>
 #include <signal.h>

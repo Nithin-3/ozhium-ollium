@@ -33,6 +33,7 @@ Icons icons = {
 	.batFull=" ",
 	.batLow="󱊡",
 	.batIdel="󰁹",
+	.batCrit="󰂃",
 	.wifi=" ",
 	.ethernet="󰈀 ",
 	.bluetooth="",
@@ -105,8 +106,8 @@ void loadConfig(void) {
 
 
 	// set sliderConfig =============================
-	if (g_key_file_has_key(keyfile, "slider", "invert_dir", NULL)) {
-		gboolean val = g_key_file_get_boolean(keyfile, "slider", "invert_dir", &error);
+	if (g_key_file_has_key(keyfile, "slider", "invert-dir", NULL)) {
+		gboolean val = g_key_file_get_boolean(keyfile, "slider", "invert-dir", &error);
 		if (!error)
 			sliderConfig.invert_dir = val;
 	}
@@ -143,6 +144,8 @@ void loadConfig(void) {
 		icons.batDischarge = g_key_file_get_string(keyfile, "icons", "bat-discharge", &error);
 	if (g_key_file_has_key(keyfile, "icons", "bat-idel", NULL))
 		icons.batIdel = g_key_file_get_string(keyfile, "icons", "bat-idel", &error);
+	if (g_key_file_has_key(keyfile, "icons", "bat-crit", NULL))
+		icons.batCrit = g_key_file_get_string(keyfile, "icons", "bat-crit", &error);
 	if (g_key_file_has_key(keyfile, "icons", "wifi", NULL))
 		icons.wifi = g_key_file_get_string(keyfile, "icons", "wifi", &error);
 	if (g_key_file_has_key(keyfile, "icons", "ethernet", NULL))
