@@ -22,7 +22,7 @@ int bri_wd=0;
 static int mainloop_running = 0;
 
 // inotify callback - monitors backlight and battery changes
-static void inotify_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
+static void inotifyCb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api; (void)e; (void)ud;
 	if (!(events & PA_IO_EVENT_INPUT)) return;
 	if (!mainloop_running) return;
@@ -66,7 +66,7 @@ int main() {
 
 	}
 
-	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotify_cb, NULL);
+	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotifyCb, NULL);
 
 	if (initNetlink(api) != 0) {
 		fprintf(stderr, "Failed to init netlink\n");

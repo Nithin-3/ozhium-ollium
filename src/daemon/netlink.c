@@ -16,52 +16,71 @@
 #include <linux/rtnetlink.h>
 #include <linux/if_arp.h>
 #include <linux/input.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#define MAX_INTERFACES 64
+
 
 static int netlink_fd = -1;
 static int uevent_fd  = -1;
 static pa_io_event *netlink_io = NULL;
 static pa_io_event *uevent_io  = NULL;
 static pa_mainloop_api *netlink_api = NULL;
+static uint32_t prev_flags[MAX_INTERFACES] = {0};
 
+int is_wifi(const char *ifname) {
+	char path[256];
+	snprintf(path, sizeof(path), "/sys/class/net/%s/phy80211", ifname);
+	struct stat st;
+	return stat(path, &st) == 0;
+}
 
-// handle changes on wi-fi and ethernet
-void netlink_recv(int fd) {
+void netlinkRecv(int fd) {
 	char buf[8192];
 	struct sockaddr_nl addr;
 	socklen_t addr_len = sizeof(addr);
-
 	ssize_t len = recvfrom(fd, buf, sizeof(buf), 0, (struct sockaddr *)&addr, &addr_len);
 	if (len <= 0) return;
-
 	struct nlmsghdr *nlh = (struct nlmsghdr *)buf;
-	while (NLMSG_OK(nlh, (size_t)len)) {
+	while (NLMSG_OK(nlh, len)) {
 		if (nlh->nlmsg_type == RTM_NEWLINK || nlh->nlmsg_type == RTM_DELLINK) {
 			struct ifinfomsg *ifi = NLMSG_DATA(nlh);
-			struct rtattr    *rta = IFLA_RTA(ifi);
-			int rtl = IFLA_PAYLOAD(nlh);
-
-			if (!(ifi->ifi_change & (IFF_UP | IFF_RUNNING | IFF_LOWER_UP))) {
+			int idx = ifi->ifi_index;
+			if (idx < 0 || idx >= MAX_INTERFACES) {
 				nlh = NLMSG_NEXT(nlh, len);
 				continue;
 			}
-
+			uint32_t old_flags = prev_flags[idx];
+			uint32_t new_flags = ifi->ifi_flags;
+			uint32_t changed = old_flags ^ new_flags;
+			prev_flags[idx] = new_flags;
+			if (!(changed & (IFF_UP | IFF_RUNNING | IFF_LOWER_UP))) {
+				nlh = NLMSG_NEXT(nlh, len);
+				continue;
+			}
+			int was_connected = (old_flags & IFF_RUNNING) && (old_flags & IFF_LOWER_UP);
+			int now_connected = (new_flags & IFF_RUNNING) && (new_flags & IFF_LOWER_UP);
+			if (was_connected == now_connected) {
+				nlh = NLMSG_NEXT(nlh, len);
+				continue;
+			}
+			struct rtattr *rta = IFLA_RTA(ifi);
+			int rtl = IFLA_PAYLOAD(nlh);
 			while (RTA_OK(rta, rtl)) {
 				if (rta->rta_type == IFLA_IFNAME) {
 					char *ifname = (char *)RTA_DATA(rta);
-					int connected = (ifi->ifi_flags & IFF_RUNNING) && (ifi->ifi_flags & IFF_LOWER_UP);
-					const char *state = connected ? "connected" : "disconnected";
-
-					if (ifi->ifi_type == ARPHRD_IEEE80211) { // wi-fi
+					const char *state = now_connected ? "connected" : "disconnected";
+					if (is_wifi(ifname)) {
 						textData t = {0};
 						t.action = WIFI;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
 						fprintf(stdout, "[netlink] net: %s\n", t.text);
 						execUI(TEXT, &t);
-					} else if (ifi->ifi_type == ARPHRD_ETHER) { // ethernet
+					} else if (ifi->ifi_type == ARPHRD_ETHER) {
 						textData t = {0};
 						t.action = ETHERNET;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
@@ -78,7 +97,7 @@ void netlink_recv(int fd) {
 
 
 // handle changes on bluetooth and battery
-void uevent_recv(int fd) {
+void ueventRecv(int fd) {
 	char buf[8192];
 	ssize_t len = read(fd, buf, sizeof(buf) - 1);
 	if (len <= 0) return;
@@ -169,16 +188,16 @@ void uevent_recv(int fd) {
 }
 
 
-void netlink_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
+void netlinkCb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api; (void)e; (void)ud;
 	if (!(events & PA_IO_EVENT_INPUT)) return;
-	netlink_recv(fd);
+	netlinkRecv(fd);
 }
 
-void uevent_cb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
+void ueventCb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api; (void)e; (void)ud;
 	if (!(events & PA_IO_EVENT_INPUT)) return;
-	uevent_recv(fd);
+	ueventRecv(fd);
 }
 
 
@@ -197,7 +216,7 @@ int initNetlink(pa_mainloop_api *api) {
 		netlink_fd = -1;
 		return -1;
 	}
-	netlink_io = api->io_new(api, netlink_fd, PA_IO_EVENT_INPUT, netlink_cb, NULL);
+	netlink_io = api->io_new(api, netlink_fd, PA_IO_EVENT_INPUT, netlinkCb, NULL);
 
 	uevent_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_KOBJECT_UEVENT);
 	if (uevent_fd < 0) { perror("uevent socket"); return -1; }
@@ -211,7 +230,7 @@ int initNetlink(pa_mainloop_api *api) {
 		uevent_fd = -1;
 		return -1;
 	}
-	uevent_io = api->io_new(api, uevent_fd, PA_IO_EVENT_INPUT, uevent_cb, NULL);
+	uevent_io = api->io_new(api, uevent_fd, PA_IO_EVENT_INPUT, ueventCb, NULL);
 
 	fprintf(stdout, "[netlink] monitoring net, bluetooth, battery\n");
 	return 0;

@@ -15,8 +15,8 @@
 #include <stdio.h>
 #include <string.h>
 
-static char batSta_path[PATH_MAX] = {0};
-static char batCap_path[PATH_MAX] = {0};
+static char bat_sta_path[PATH_MAX] = {0};
+static char bat_cap_path[PATH_MAX] = {0};
 
 int getBatteryPaths(char *cap, char *sta, size_t sz) {
     DIR *d = opendir("/sys/class/power_supply/");
@@ -34,15 +34,15 @@ int getBatteryPaths(char *cap, char *sta, size_t sz) {
 }
 
 int getBattery(textData *t) {
-	if (batSta_path[0] == '\0') {
-		if (getBatteryPaths(batCap_path, batSta_path, PATH_MAX))
+	if (bat_sta_path[0] == '\0') {
+		if (getBatteryPaths(bat_cap_path, bat_sta_path, PATH_MAX))
 			return 1;
 	}
 
 	int cap;
 	char buff[32];
-	if (!catFile(batCap_path, &cap)) return 1;
-	if (!catFileStr(batSta_path, buff, sizeof(buff))) return 1;
+	if (!catFile(bat_cap_path, &cap)) return 1;
+	if (!catFileStr(bat_sta_path, buff, sizeof(buff))) return 1;
 
 	snprintf(t->text, sizeof(t->text), "%d%%", cap);
 
