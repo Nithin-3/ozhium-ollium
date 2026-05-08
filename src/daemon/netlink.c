@@ -146,7 +146,7 @@ void ueventRecv(int fd) {
 		textData t = {0};
 		static ACTION act = INVALID;
 		getBattery(&t);
-		if (t.action == act || (BAT_DISCHARGE == t.action && power_supply_capacity > 20)) return;	
+		if (t.action == act) return;
 		act = t.action;
 		execUI(TEXT, &t);
                 return;
