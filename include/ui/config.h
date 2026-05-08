@@ -22,7 +22,7 @@ typedef struct {
 /**
  * @brief Slider widget configuration
  */
-typedef struct{
+typedef struct {
 	bool invert_dir;
 	char *label1, *label2;
 } SliderConfig;
@@ -30,7 +30,7 @@ typedef struct{
 /**
  * @brief Text/label widget configuration
  */
-typedef struct{
+typedef struct {
 	char *label;
 } TextConfig;
 

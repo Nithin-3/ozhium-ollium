@@ -30,7 +30,7 @@ static gboolean onClose(gpointer data) {
 	return G_SOURCE_REMOVE;
 }
 
-void applyLayerShell(GtkWindow *win) { // TODO: this function i wanna change
+void applyLayerShell(GtkWindow *win) {	// TODO: this function i wanna change
 	gtk_layer_init_for_window(win);
 	gtk_layer_set_layer(win, GTK_LAYER_SHELL_LAYER_OVERLAY);
 	gtk_layer_set_exclusive_zone(win, -1);
@@ -73,7 +73,8 @@ void applyLayerShell(GtkWindow *win) { // TODO: this function i wanna change
 
 void setupCss(void) {
 	char *cssPath = findConfigPath("style.css");
-	if (cssPath == NULL) return;
+	if (cssPath == NULL)
+		return;
 	GtkCssProvider *provider = gtk_css_provider_new();
 	gtk_css_provider_load_from_path(provider, cssPath);
 	gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);

@@ -29,14 +29,14 @@ Icons icons = {
 	.mic = "󰍬",
 	.micMute = " ",
 	.batCharge = "󰂄",
-	.batDischarge ="󰁾",
-	.batFull=" ",
-	.batLow="󱊡",
-	.batIdel="󰁹",
-	.batCrit="󰂃",
-	.wifi=" ",
-	.ethernet="󰈀 ",
-	.bluetooth="",
+	.batDischarge = "󰁾",
+	.batFull = " ",
+	.batLow = "󱊡",
+	.batIdel = "󰁹",
+	.batCrit = "󰂃",
+	.wifi = " ",
+	.ethernet = "󰈀 ",
+	.bluetooth = "",
 };
 
 SliderConfig sliderConfig = {
@@ -53,7 +53,8 @@ void loadConfig(void) {
 	GKeyFile *keyfile = g_key_file_new();
 	GError *error = NULL;
 	char *path = findConfigPath("ozhium-ollium.conf");
-	if (path == NULL) return;
+	if (path == NULL)
+		return;
 	if (!g_key_file_load_from_file(keyfile, path, G_KEY_FILE_NONE, &error)) {
 		g_error_free(error);
 		g_key_file_unref(keyfile);
@@ -104,7 +105,6 @@ void loadConfig(void) {
 	}
 	// =======================
 
-
 	// set sliderConfig =============================
 	if (g_key_file_has_key(keyfile, "slider", "invert-dir", NULL)) {
 		gboolean val = g_key_file_get_boolean(keyfile, "slider", "invert-dir", &error);
@@ -117,7 +117,7 @@ void loadConfig(void) {
 		sliderConfig.label2 = g_key_file_get_string(keyfile, "slider", "label2", &error);
 	// ===============
 	// set textConfig ====================
-	
+
 	if (g_key_file_has_key(keyfile, "text", "label", NULL))
 		textConfig.label = g_key_file_get_string(keyfile, "text", "label", &error);
 

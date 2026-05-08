@@ -13,12 +13,16 @@
 #include <stdio.h>
 #include <unistd.h>
 
-// Main entry point - initializes inotify, netlink, and PulseAudio then runs mainloop
+// Main entry point - initializes inotify, netlink, and PulseAudio then runs
+// mainloop
 int main() {
-	fprintf(stdout,"ozhium-ollium started ....\n");
+	fprintf(stdout, "ozhium-ollium started ....\n");
 	fflush(stdout);
 	pa_mainloop *ml = pa_mainloop_new();
-	if (!ml) { fprintf(stderr, "Failed to create mainloop\n"); return 1; }
+	if (!ml) {
+		fprintf(stderr, "Failed to create mainloop\n");
+		return 1;
+	}
 	pa_mainloop_api *api = pa_mainloop_get_api(ml);
 
 	if (initInotify(api) != 0) {
@@ -39,11 +43,12 @@ int main() {
 		return 1;
 	}
 
-	fprintf(stdout,"watch pulse sink source\n(Ctrl+C to exit)\n");
+	fprintf(stdout, "watch pulse sink source\n(Ctrl+C to exit)\n");
 	fflush(stdout);
 	pa_mainloop_run(ml, NULL);
 
-	if (pa_ctx) pa_context_unref(pa_ctx);
+	if (pa_ctx)
+		pa_context_unref(pa_ctx);
 	cleanupInotify();
 	cleanupNetlink();
 	pa_mainloop_free(ml);

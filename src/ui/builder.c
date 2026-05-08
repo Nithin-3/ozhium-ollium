@@ -32,17 +32,16 @@ char *getIconForAction(ACTION action);
 void buildLabels(const sliderData *s, char **out_l1, char **out_l2);
 
 GtkWidget *initBox(void) {
-    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_hexpand(box, TRUE);
-    gtk_widget_set_vexpand(box, TRUE);
-    return box;
+	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_set_hexpand(box, TRUE);
+	gtk_widget_set_vexpand(box, TRUE);
+	return box;
 }
 
-
 static void clearBox(void) {
-    GtkWidget *child;
-    while ((child = gtk_widget_get_first_child(box)) != NULL)
-        gtk_box_remove(GTK_BOX(box), child);
+	GtkWidget *child;
+	while ((child = gtk_widget_get_first_child(box)) != NULL)
+		gtk_box_remove(GTK_BOX(box), child);
 }
 
 void applySlider(const sliderData *s) {
@@ -50,11 +49,13 @@ void applySlider(const sliderData *s) {
 	buildLabels(s, &l1, &l2);
 
 	for (GtkWidget *child = gtk_widget_get_first_child(box); child != NULL; child = gtk_widget_get_next_sibling(child)) {
-
 		const char *name = gtk_widget_get_name(child);
-		if (strcmp(name, sldr)   == 0) gtk_range_set_value(GTK_RANGE(child), (double)s->current);
-		else if (strcmp(name, sldrLB) == 0) gtk_label_set_text(GTK_LABEL(child), l1);
-		else if (strcmp(name, sldrLA) == 0) gtk_label_set_text(GTK_LABEL(child), l2);
+		if (strcmp(name, sldr) == 0)
+			gtk_range_set_value(GTK_RANGE(child), (double)s->current);
+		else if (strcmp(name, sldrLB) == 0)
+			gtk_label_set_text(GTK_LABEL(child), l1);
+		else if (strcmp(name, sldrLA) == 0)
+			gtk_label_set_text(GTK_LABEL(child), l2);
 	}
 
 	free(l1);
@@ -62,15 +63,16 @@ void applySlider(const sliderData *s) {
 }
 
 void applyText(const textData *t) {
-    char *tmp  = strReplace(textConfig.label, "#ico#", getIconForAction(t->action));
-    char *text = strReplace(tmp, "#val#", t->text);
-    free(tmp);
+	char *tmp = strReplace(textConfig.label, "#ico#", getIconForAction(t->action));
+	char *text = strReplace(tmp, "#val#", t->text);
+	free(tmp);
 
-    for (GtkWidget *child = gtk_widget_get_first_child(box); child != NULL; child = gtk_widget_get_next_sibling(child)) {
-        if (strcmp(gtk_widget_get_name(child), txt) == 0) gtk_label_set_text(GTK_LABEL(child), text);
-    }
+	for (GtkWidget *child = gtk_widget_get_first_child(box); child != NULL; child = gtk_widget_get_next_sibling(child)) {
+		if (strcmp(gtk_widget_get_name(child), txt) == 0)
+			gtk_label_set_text(GTK_LABEL(child), text);
+	}
 
-    free(text);
+	free(text);
 }
 
 void buildSlider(const sliderData *s) {
@@ -130,7 +132,7 @@ void buildText(const textData *t) {
 	gtk_label_set_yalign(GTK_LABEL(textWidget), 0.5f);
 	gtk_widget_set_hexpand(textWidget, TRUE);
 	gtk_widget_set_vexpand(textWidget, TRUE);
-	gtk_box_append(GTK_BOX(box), textWidget); // add first, then apply
+	gtk_box_append(GTK_BOX(box), textWidget);  // add first, then apply
 	applyText(t);
 }
 
@@ -141,12 +143,16 @@ void updateContent(GUI_ELEMENT el, const sliderData *s, const textData *t) {
 
 	switch (el) {
 		case SLIDER:
-			if (strcmp(boxName, "slider-box") == 0) applySlider(s);
-			else buildSlider(s);
+			if (strcmp(boxName, "slider-box") == 0)
+				applySlider(s);
+			else
+				buildSlider(s);
 			break;
 		case TEXT:
-			if (strcmp(boxName, "text-box") == 0) applyText(t);
-			else buildText(t);
+			if (strcmp(boxName, "text-box") == 0)
+				applyText(t);
+			else
+				buildText(t);
 			break;
 		default:
 			printf("[updateContent] WARNING: unknown element %d\n", el);
@@ -189,9 +195,8 @@ char *getIconForAction(ACTION action) {
 	}
 }
 
-
 void buildLabels(const sliderData *s, char **out_l1, char **out_l2) {
-	gchar *textBuf = g_strdup_printf( "%d", s->current > 1 ? (int)s->current : (int)(s->current * 100));
+	gchar *textBuf = g_strdup_printf("%d", s->current > 1 ? (int)s->current : (int)(s->current * 100));
 	const char *ico = getIconForAction(s->action);
 
 	char *tmp;
@@ -206,4 +211,3 @@ void buildLabels(const sliderData *s, char **out_l1, char **out_l2) {
 
 	g_free(textBuf);
 }
-

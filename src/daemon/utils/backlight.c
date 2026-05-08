@@ -15,8 +15,8 @@
 #include "daemon/utils/backlight.h"
 #include "daemon/utils/tool.h"
 
-char bri_path[PATH_MAX] = {0};
-char max_path[PATH_MAX] = {0};
+char bri_path[PATH_MAX] = { 0 };
+char max_path[PATH_MAX] = { 0 };
 
 int getBacklightPaths(char *bri_path, char *max_path, size_t size) {
 	DIR *d = opendir("/sys/class/backlight/");
@@ -37,17 +37,17 @@ int getBacklightPaths(char *bri_path, char *max_path, size_t size) {
 	return 1;
 }
 
-
 int getBacklight(sliderData *s) {
-    if (bri_path[0] == '\0') {
-        if (getBacklightPaths(bri_path, max_path, sizeof(bri_path)))
-            return 1;
-    }
-    int crnt, max;
-    if (!catFile(max_path, &max) || !catFile(bri_path, &crnt)) return -1;
-    s->min = 0.0f;
-    s->max = 1.0f;
-    s->current =  (float)crnt / max;
-    s->action = BACKLIGHT;
-    return 0;
+	if (bri_path[0] == '\0') {
+		if (getBacklightPaths(bri_path, max_path, sizeof(bri_path)))
+			return 1;
+	}
+	int crnt, max;
+	if (!catFile(max_path, &max) || !catFile(bri_path, &crnt))
+		return -1;
+	s->min = 0.0f;
+	s->max = 1.0f;
+	s->current = (float)crnt / max;
+	s->action = BACKLIGHT;
+	return 0;
 }

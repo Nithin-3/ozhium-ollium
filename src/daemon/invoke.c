@@ -17,7 +17,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-
 /*
  * actionToString , elementToString
  * it used for IPC
@@ -30,13 +29,14 @@ static const char *elementToString(GUI_ELEMENT e);
 
 static void reapChildren(int sig) {
 	(void)sig;
-	while (waitpid(-1, NULL, WNOHANG) > 0);
+	while (waitpid(-1, NULL, WNOHANG) > 0)
+		;
 }
 
 static void initSigchld(void) {
 	static int done = 0;
 	if (!done) {
-		struct sigaction sa = {0};
+		struct sigaction sa = { 0 };
 		sa.sa_handler = reapChildren;
 		sigemptyset(&sa.sa_mask);
 		sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
@@ -56,40 +56,42 @@ void execUI(const GUI_ELEMENT element, void *data) {
 	strncpy(elementBuf, elementToString(element), sizeof(elementBuf));
 
 	fprintf(stderr, "[execUI] forking...\n");
-	pid_t pid = fork(); // cloning daemon....
+	pid_t pid = fork();  // cloning daemon....
 	if (pid < 0) {
 		perror("fork failed");
 		return;
 	}
 
-	if (pid == 0) { // child process
+	if (pid == 0) {	 // child process
 		switch (element) {
 			case SLIDER: {
-					     sliderData *s = (sliderData *)data;
-					     char minBuf[64], maxBuf[64], curBuf[64], actionBuf[8];
-					     snprintf(minBuf, sizeof(minBuf), "%.6f", s->min);
-					     snprintf(maxBuf, sizeof(maxBuf), "%.6f", s->max);
-					     snprintf(curBuf, sizeof(curBuf), "%.6f", s->current);
-					     strncpy(actionBuf, actionToString(s->action), sizeof(actionBuf));
-					     char *args[] = {uiBinary, "--element", elementBuf, "--min", minBuf,   "--max",     maxBuf,     "--current", curBuf,   "--action",  actionBuf,  NULL};
-					     execv(uiBinary, args); // clear daemon load uiBinary
-					     break;
-				     }
+				sliderData *s = (sliderData *)data;
+				char minBuf[64], maxBuf[64], curBuf[64], actionBuf[8];
+				snprintf(minBuf, sizeof(minBuf), "%.6f", s->min);
+				snprintf(maxBuf, sizeof(maxBuf), "%.6f", s->max);
+				snprintf(curBuf, sizeof(curBuf), "%.6f", s->current);
+				strncpy(actionBuf, actionToString(s->action), sizeof(actionBuf));
+				char *args[] = { uiBinary, "--element", elementBuf, "--min",
+						 minBuf, "--max", maxBuf, "--current",
+						 curBuf, "--action", actionBuf, NULL };
+				execv(uiBinary, args);	// clear daemon load uiBinary
+				break;
+			}
 			case TEXT: {
-				   textData *t = (textData *)data;
-				   char actionBuf[8];
-				   strncpy(actionBuf, actionToString(t->action), sizeof(actionBuf));
-				   char *args[] = {uiBinary, "--element", elementBuf, "--text", t->text, "--action", actionBuf, NULL};
-				   execv(uiBinary, args); // clear daemon load uiBinary
-				   break;
-			   }
+				textData *t = (textData *)data;
+				char actionBuf[8];
+				strncpy(actionBuf, actionToString(t->action), sizeof(actionBuf));
+				char *args[] = { uiBinary, "--element", elementBuf, "--text",
+						 t->text, "--action", actionBuf, NULL };
+				execv(uiBinary, args);	// clear daemon load uiBinary
+				break;
+			}
 		}
-		perror("execv ozhium-ollium-ui"); // if fail to load uiBinary
+		perror("execv ozhium-ollium-ui");  // if fail to load uiBinary
 		_exit(1);
 	}
 	fprintf(stderr, "[execUI] parent: child pid=%d\n", pid);
 }
-
 
 const char *actionToString(ACTION a) {
 	switch (a) {

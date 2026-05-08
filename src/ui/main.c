@@ -34,7 +34,7 @@ static void onActivate(GtkApplication *app, gpointer data) {
 	switch (elementType) {
 		case SLIDER: {
 			printf("[onActivate] Building slider with passed data\n");
-			sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
+			sliderData s = { currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action };
 			buildSlider(&s);
 			break;
 		}
@@ -48,7 +48,7 @@ static void onActivate(GtkApplication *app, gpointer data) {
 			break;
 		}
 		default: {
-			textData t = {"UNKNOWN ELEMENT", INVALID};
+			textData t = { "UNKNOWN ELEMENT", INVALID };
 			buildText(&t);
 			break;
 		}
@@ -70,8 +70,9 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 	}
 
 	int argc = 0;
-	while (argv[argc]) argc++;
-	
+	while (argv[argc])
+		argc++;
+
 	if (parseArgs(argc, argv, &currentArgs) != 0) {
 		g_strfreev(argv);
 		return 1;
@@ -79,14 +80,14 @@ static int commandLineHandler(GApplication *app, GApplicationCommandLine *cmdlin
 	g_strfreev(argv);
 
 	elementType = currentArgs.element;
-	
+
 	if (globalWindow) {
-		sliderData s = {currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action};
+		sliderData s = { currentArgs.min, currentArgs.max, currentArgs.current, currentArgs.action };
 		textData t;
 		strncpy(t.text, currentArgs.text, sizeof(t.text) - 1);
 		t.text[sizeof(t.text) - 1] = '\0';
 		t.action = currentArgs.action;
-		
+
 		printf("[commandLineHandler] Calling updateContent with proper structs\n");
 		updateContent(elementType, &s, &t);
 		gtk_window_present(GTK_WINDOW(globalWindow));

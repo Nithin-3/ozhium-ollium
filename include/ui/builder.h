@@ -3,8 +3,6 @@
 #include "shared/common.h"
 #include <gtk/gtk.h>
 
-
-
 GtkWidget *initBox(void);
 /**
  * @brief Build a slider widget with given data
