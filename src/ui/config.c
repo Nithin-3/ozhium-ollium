@@ -8,9 +8,10 @@
  */
 
 #include "ui/config.h"
-#include "glib.h"
-#include "glibconfig.h"
-#include "ui/tool.h"
+#include "shared/common.h"
+#include "ini.h"
+#include <string.h>
+#include <stdlib.h>
 
 AppConfig appConfig = {
 	.horizontalAlign = "center",
@@ -40,7 +41,7 @@ Icons icons = {
 };
 
 SliderConfig sliderConfig = {
-	.invert_dir = FALSE,
+	.invert_dir = false,
 	.label1 = "#ico#",
 	.label2 = "#val#",
 };
@@ -49,110 +50,87 @@ TextConfig textConfig = {
 	.label = "#ico# #val#",
 };
 
+static int configHandler(void *user, const char *section, const char *name, const char *value) {
+	(void)user;
+
+	if (strcmp(section, "osd") == 0) {
+		if (strcmp(name, "vertical-align") == 0) {
+			if (strcmp(value, "top") == 0 || strcmp(value, "center") == 0 || strcmp(value, "bottom") == 0)
+				appConfig.verticalAlign = strdup(value);
+		} else if (strcmp(name, "horizontal-align") == 0) {
+			if (strcmp(value, "left") == 0 || strcmp(value, "right") == 0 || strcmp(value, "center") == 0)
+				appConfig.horizontalAlign = strdup(value);
+		} else if (strcmp(name, "orientation") == 0) {
+			if (strcmp(value, "vertical") == 0 || strcmp(value, "horizontal") == 0)
+				appConfig.orientation = strdup(value);
+		} else if (strcmp(name, "timeout") == 0) {
+			int val = atoi(value);
+			if (val > 0)
+				appConfig.timeOut = val;
+		} else if (strcmp(name, "x") == 0) {
+			int val = atoi(value);
+			if (val >= 0)
+				appConfig.x = val;
+		} else if (strcmp(name, "y") == 0) {
+			int val = atoi(value);
+			if (val >= 0)
+				appConfig.y = val;
+		} else if (strcmp(name, "margin") == 0) {
+			int val = atoi(value);
+			if (val >= 0)
+				appConfig.margin = val;
+		}
+	} else if (strcmp(section, "slider") == 0) {
+		if (strcmp(name, "invert-dir") == 0) {
+			if (strcmp(value, "true") == 0 || strcmp(value, "1") == 0)
+				sliderConfig.invert_dir = true;
+			else if (strcmp(value, "false") == 0 || strcmp(value, "0") == 0)
+				sliderConfig.invert_dir = false;
+		} else if (strcmp(name, "label1") == 0) {
+			sliderConfig.label1 = strdup(value);
+		} else if (strcmp(name, "label2") == 0) {
+			sliderConfig.label2 = strdup(value);
+		}
+	} else if (strcmp(section, "text") == 0) {
+		if (strcmp(name, "label") == 0)
+			textConfig.label = strdup(value);
+	} else if (strcmp(section, "icons") == 0) {
+		if (strcmp(name, "backlight") == 0)
+			icons.backlight = strdup(value);
+		else if (strcmp(name, "volume") == 0)
+			icons.volume = strdup(value);
+		else if (strcmp(name, "volume-mute") == 0)
+			icons.volumeMute = strdup(value);
+		else if (strcmp(name, "mic") == 0)
+			icons.mic = strdup(value);
+		else if (strcmp(name, "mic-mute") == 0)
+			icons.micMute = strdup(value);
+		else if (strcmp(name, "bat-low") == 0)
+			icons.batLow = strdup(value);
+		else if (strcmp(name, "bat-full") == 0)
+			icons.batFull = strdup(value);
+		else if (strcmp(name, "bat-charge") == 0)
+			icons.batCharge = strdup(value);
+		else if (strcmp(name, "bat-discharge") == 0)
+			icons.batDischarge = strdup(value);
+		else if (strcmp(name, "bat-idel") == 0)
+			icons.batIdel = strdup(value);
+		else if (strcmp(name, "bat-crit") == 0)
+			icons.batCrit = strdup(value);
+		else if (strcmp(name, "wifi") == 0)
+			icons.wifi = strdup(value);
+		else if (strcmp(name, "ethernet") == 0)
+			icons.ethernet = strdup(value);
+		else if (strcmp(name, "bluetooth") == 0)
+			icons.bluetooth = strdup(value);
+	}
+
+	return 1;
+}
+
 void loadConfig(void) {
-	GKeyFile *keyfile = g_key_file_new();
-	GError *error = NULL;
 	char *path = findConfigPath("ozhium-ollium.conf");
 	if (path == NULL)
 		return;
-	if (!g_key_file_load_from_file(keyfile, path, G_KEY_FILE_NONE, &error)) {
-		g_error_free(error);
-		g_key_file_unref(keyfile);
-		return;
-	}
-
-	// set appConfig ==========================
-	if (g_key_file_has_key(keyfile, "osd", "vertical-align", NULL)) {
-		gchar *val = g_key_file_get_string(keyfile, "osd", "vertical-align", &error);
-		if (val && (strcmp(val, "top") == 0 || strcmp(val, "center") == 0 || strcmp(val, "bottom") == 0))
-			appConfig.verticalAlign = val;
-		else
-			g_free(val);
-	}
-	if (g_key_file_has_key(keyfile, "osd", "horizontal-align", NULL)) {
-		gchar *val = g_key_file_get_string(keyfile, "osd", "horizontal-align", &error);
-		if (val && (strcmp(val, "left") == 0 || strcmp(val, "right") == 0 || strcmp(val, "center") == 0))
-			appConfig.horizontalAlign = val;
-		else
-			g_free(val);
-	}
-	if (g_key_file_has_key(keyfile, "osd", "orientation", NULL)) {
-		gchar *val = g_key_file_get_string(keyfile, "osd", "orientation", &error);
-		if (val && (strcmp(val, "vertical") == 0 || strcmp(val, "horizontal") == 0))
-			appConfig.orientation = val;
-		else
-			g_free(val);
-	}
-	if (g_key_file_has_key(keyfile, "osd", "timeout", NULL)) {
-		gint val = g_key_file_get_integer(keyfile, "osd", "timeout", &error);
-		if (!error && val > 0)
-			appConfig.timeOut = val;
-	}
-	if (g_key_file_has_key(keyfile, "osd", "x", NULL)) {
-		gint val = g_key_file_get_integer(keyfile, "osd", "x", &error);
-		if (!error && val >= 0)
-			appConfig.x = val;
-	}
-	if (g_key_file_has_key(keyfile, "osd", "y", NULL)) {
-		gint val = g_key_file_get_integer(keyfile, "osd", "y", &error);
-		if (!error && val >= 0)
-			appConfig.y = val;
-	}
-	if (g_key_file_has_key(keyfile, "osd", "margin", NULL)) {
-		gint val = g_key_file_get_integer(keyfile, "osd", "margin", &error);
-		if (!error && val >= 0)
-			appConfig.margin = val;
-	}
-	// =======================
-
-	// set sliderConfig =============================
-	if (g_key_file_has_key(keyfile, "slider", "invert-dir", NULL)) {
-		gboolean val = g_key_file_get_boolean(keyfile, "slider", "invert-dir", &error);
-		if (!error)
-			sliderConfig.invert_dir = val;
-	}
-	if (g_key_file_has_key(keyfile, "slider", "label1", NULL))
-		sliderConfig.label1 = g_key_file_get_string(keyfile, "slider", "label1", &error);
-	if (g_key_file_has_key(keyfile, "slider", "label2", NULL))
-		sliderConfig.label2 = g_key_file_get_string(keyfile, "slider", "label2", &error);
-	// ===============
-	// set textConfig ====================
-
-	if (g_key_file_has_key(keyfile, "text", "label", NULL))
-		textConfig.label = g_key_file_get_string(keyfile, "text", "label", &error);
-
-	//=============================
-
-	// set icons ==========================
-	if (g_key_file_has_key(keyfile, "icons", "backlight", NULL))
-		icons.backlight = g_key_file_get_string(keyfile, "icons", "backlight", &error);
-	if (g_key_file_has_key(keyfile, "icons", "volume", NULL))
-		icons.volume = g_key_file_get_string(keyfile, "icons", "volume", &error);
-	if (g_key_file_has_key(keyfile, "icons", "volume-mute", NULL))
-		icons.volumeMute = g_key_file_get_string(keyfile, "icons", "volume-mute", &error);
-	if (g_key_file_has_key(keyfile, "icons", "mic", NULL))
-		icons.mic = g_key_file_get_string(keyfile, "icons", "mic", &error);
-	if (g_key_file_has_key(keyfile, "icons", "mic-mute", NULL))
-		icons.micMute = g_key_file_get_string(keyfile, "icons", "mic-mute", &error);
-	if (g_key_file_has_key(keyfile, "icons", "bat-low", NULL))
-		icons.batLow = g_key_file_get_string(keyfile, "icons", "bat-low", &error);
-	if (g_key_file_has_key(keyfile, "icons", "bat-full", NULL))
-		icons.batFull = g_key_file_get_string(keyfile, "icons", "bat-full", &error);
-	if (g_key_file_has_key(keyfile, "icons", "bat-charge", NULL))
-		icons.batCharge = g_key_file_get_string(keyfile, "icons", "bat-charge", &error);
-	if (g_key_file_has_key(keyfile, "icons", "bat-discharge", NULL))
-		icons.batDischarge = g_key_file_get_string(keyfile, "icons", "bat-discharge", &error);
-	if (g_key_file_has_key(keyfile, "icons", "bat-idel", NULL))
-		icons.batIdel = g_key_file_get_string(keyfile, "icons", "bat-idel", &error);
-	if (g_key_file_has_key(keyfile, "icons", "bat-crit", NULL))
-		icons.batCrit = g_key_file_get_string(keyfile, "icons", "bat-crit", &error);
-	if (g_key_file_has_key(keyfile, "icons", "wifi", NULL))
-		icons.wifi = g_key_file_get_string(keyfile, "icons", "wifi", &error);
-	if (g_key_file_has_key(keyfile, "icons", "ethernet", NULL))
-		icons.ethernet = g_key_file_get_string(keyfile, "icons", "ethernet", &error);
-	if (g_key_file_has_key(keyfile, "icons", "bluetooth", NULL))
-		icons.bluetooth = g_key_file_get_string(keyfile, "icons", "bluetooth", &error);
-	// ====================
-
-	g_key_file_unref(keyfile);
+	ini_parse(path, configHandler, NULL);
 }
