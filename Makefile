@@ -22,7 +22,7 @@
 # Installation: See DEPENDENCIES file for detailed setup instructions
 
 CC      = gcc
-CFLAGS  = -Wall -Wextra -I include
+CFLAGS  = -Wall -Wextra -I include -I third_party/inih
 GTK_CFLAGS  = $(shell pkg-config --cflags gtk4 gtk4-layer-shell-0)
 GTK_LDFLAGS = $(shell pkg-config --libs gtk4 gtk4-layer-shell-0)
 
@@ -33,12 +33,14 @@ OBJ_DIR   = out
 DAEMON_SRC = \
 	src/daemon/ozhium-ollium.c \
 	src/daemon/invoke.c \
+	src/daemon/config.c \
 	src/daemon/utils/battery.c \
 	src/daemon/utils/tool.c \
 	src/daemon/utils/backlight.c \
 	src/daemon/monitors/pulse.c \
 	src/daemon/monitors/netlink.c \
-	src/daemon/monitors/inotify.c
+	src/daemon/monitors/inotify.c \
+	src/shared/common.c
 
 UI_SRC = \
 	src/ui/main.c \
@@ -46,11 +48,14 @@ UI_SRC = \
 	src/ui/window.c \
 	src/ui/builder.c \
 	src/ui/args.c \
-	src/ui/tool.c
+	src/ui/tool.c \
+	src/shared/common.c
+
+INI_OBJ = $(OBJ_DIR)/third_party/inih/ini.o
 
 # Auto-generate object paths from sources
 DAEMON_OBJ = $(DAEMON_SRC:src/%.c=$(OBJ_DIR)/%.o)
-UI_OBJ     = $(UI_SRC:src/%.c=$(OBJ_DIR)/%.o)
+UI_OBJ     = $(UI_SRC:src/%.c=$(OBJ_DIR)/%.o) $(INI_OBJ)
 
 # Auto-generate dependency files
 DEPS = $(DAEMON_OBJ:.o=.d) $(UI_OBJ:.o=.d)
@@ -60,7 +65,7 @@ DEPS = $(DAEMON_OBJ:.o=.d) $(UI_OBJ:.o=.d)
 all: $(TARGET) $(UI_TARGET)
 
 # Daemon — links with libpulse
-$(TARGET): $(DAEMON_OBJ)
+$(TARGET): $(DAEMON_OBJ) $(INI_OBJ)
 	$(CC) $^ -o $@ -lpulse
 
 # UI — links with GTK4 and gtk4-layer-shell
@@ -77,8 +82,16 @@ $(OBJ_DIR)/daemon/%.o: src/daemon/%.c | $(OBJ_DIR)/daemon \
 $(OBJ_DIR)/ui/%.o: src/ui/%.c | $(OBJ_DIR)/ui
 	$(CC) $(CFLAGS) $(GTK_CFLAGS) -MMD -MP -c $< -o $@
 
+# Shared object files (used by both daemon and UI)
+$(OBJ_DIR)/shared/%.o: src/shared/%.c | $(OBJ_DIR)/shared
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+# Third-party object files
+$(OBJ_DIR)/third_party/inih/%.o: third_party/inih/%.c | $(OBJ_DIR)/third_party/inih
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
 # Create output directories
-$(OBJ_DIR)/daemon $(OBJ_DIR)/daemon/utils $(OBJ_DIR)/daemon/monitors $(OBJ_DIR)/ui:
+$(OBJ_DIR)/daemon $(OBJ_DIR)/daemon/utils $(OBJ_DIR)/daemon/monitors $(OBJ_DIR)/ui $(OBJ_DIR)/shared $(OBJ_DIR)/third_party/inih:
 	mkdir -p $@
 
 # Include dependency files
