@@ -38,7 +38,7 @@ static void sinkCb(pa_context *c, const pa_sink_info *info, int eol, void *ud) {
 		.current = current,
 		.action = muted ? AUDIO_MUTE : AUDIO,
 	};
-	execUI(SLIDER, &s);
+	execUI(s.action, &s);
 }
 
 static pa_cvolume last_source_volume;
@@ -65,7 +65,7 @@ static void sourceCb(pa_context *c, const pa_source_info *info, int eol, void *u
 		.current = current,
 		.action = muted ? MIC_MUTE : MIC,
 	};
-	execUI(SLIDER, &s);
+	execUI(s.action, &s);
 }
 
 static void eventCb(pa_context *c, pa_subscription_event_type_t t, uint32_t idx, void *ud) {

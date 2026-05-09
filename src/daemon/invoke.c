@@ -8,21 +8,11 @@
  */
 
 #include "daemon/invoke.h"
-#include "daemon/utils/tool.h"
-#include "shared/common.h"
-#include <linux/limits.h>
+#include "daemon/config.h"
 #include <signal.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-/*
- * actionToString , elementToString
- * it used for IPC
- * send string args
- * ui element and action
- */
 
 static void reapChildren(int sig) {
 	(void)sig;
@@ -42,49 +32,22 @@ static void initSigchld(void) {
 	}
 }
 
-void execUI(const GUI_ELEMENT element, void *data) {
+void execUI(const ACTION action, void *data) {
 	initSigchld();
 
-	const char *selfPath = findSelfDir();
-	char uiBinary[PATH_MAX];
-	snprintf(uiBinary, sizeof(uiBinary), "%s/ozhium-ollium-ui", selfPath);
-
-	char elementBuf[8];
-	strncpy(elementBuf, elementToString(element), sizeof(elementBuf));
-
 	fprintf(stderr, "[execUI] forking...\n");
-	pid_t pid = fork();  // cloning daemon....
+	pid_t pid = fork();
 	if (pid < 0) {
 		perror("fork failed");
 		return;
 	}
 
-	if (pid == 0) {	 // child process
-		switch (element) {
-			case SLIDER: {
-				sliderData *s = (sliderData *)data;
-				char minBuf[64], maxBuf[64], curBuf[64], actionBuf[8];
-				snprintf(minBuf, sizeof(minBuf), "%.6f", s->min);
-				snprintf(maxBuf, sizeof(maxBuf), "%.6f", s->max);
-				snprintf(curBuf, sizeof(curBuf), "%.6f", s->current);
-				strncpy(actionBuf, actionToString(s->action), sizeof(actionBuf));
-				char *args[] = { uiBinary, "--element", elementBuf, "--min",
-						 minBuf, "--max", maxBuf, "--current",
-						 curBuf, "--action", actionBuf, NULL };
-				execv(uiBinary, args);	// clear daemon load uiBinary
-				break;
-			}
-			case TEXT: {
-				textData *t = (textData *)data;
-				char actionBuf[8];
-				strncpy(actionBuf, actionToString(t->action), sizeof(actionBuf));
-				char *args[] = { uiBinary, "--element", elementBuf, "--text",
-						 t->text, "--action", actionBuf, NULL };
-				execv(uiBinary, args);	// clear daemon load uiBinary
-				break;
-			}
+	if (pid == 0) {
+		char **args = daemonExec(action, data);
+		if (args) {
+			execv(args[0], args);
+			perror("execv");
 		}
-		perror("execv ozhium-ollium-ui");  // if fail to load uiBinary
 		_exit(1);
 	}
 	fprintf(stderr, "[execUI] parent: child pid=%d\n", pid);

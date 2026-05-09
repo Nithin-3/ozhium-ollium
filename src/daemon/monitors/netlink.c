@@ -80,13 +80,13 @@ void netlinkRecv(int fd) {
 						t.action = WIFI;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
 						fprintf(stdout, "[netlink] net: %s\n", t.text);
-						execUI(TEXT, &t);
+						execUI(WIFI, &t);
 					} else if (ifi->ifi_type == ARPHRD_ETHER) {
 						textData t = { 0 };
 						t.action = ETHERNET;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
 						fprintf(stdout, "[netlink] net: %s\n", t.text);
-						execUI(TEXT, &t);
+						execUI(ETHERNET, &t);
 					}
 				}
 				rta = RTA_NEXT(rta, rtl);
@@ -155,7 +155,7 @@ void ueventRecv(int fd) {
 		if (t.action == act)
 			return;
 		act = t.action;
-		execUI(TEXT, &t);
+		execUI(t.action, &t);
 		return;
 	}
 
@@ -164,7 +164,7 @@ void ueventRecv(int fd) {
 		textData t = { 0 };
 		t.action = INVALID;
 		snprintf(t.text, sizeof(t.text), "[block] %s %s", name, action);
-		execUI(TEXT, &t);
+		execUI(INVALID, &t);
 		return;
 	}
 
@@ -173,7 +173,7 @@ void ueventRecv(int fd) {
 		textData t = { 0 };
 		t.action = INVALID;
 		snprintf(t.text, sizeof(t.text), "[HID] %s %s", name, action);
-		execUI(TEXT, &t);
+		execUI(INVALID, &t);
 		return;
 	}
 
@@ -184,7 +184,7 @@ void ueventRecv(int fd) {
 				textData t = { 0 };
 				t.action = BLUETOOTH;
 				snprintf(t.text, sizeof(t.text), "%s %s", name, action);
-				execUI(TEXT, &t);
+				execUI(INVALID, &t);
 				break;
 			case 0:
 				break;

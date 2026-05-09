@@ -10,6 +10,7 @@
 #include "daemon/monitors/inotify.h"
 #include "daemon/invoke.h"
 #include "daemon/utils/backlight.h"
+#include "shared/common.h"
 #include <stdio.h>
 #include <sys/inotify.h>
 #include <unistd.h>
@@ -33,7 +34,7 @@ static void inotifyCb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_
 			if (ev->wd == bri_wd) {
 				sliderData slider;
 				if (0 == getBacklight(&slider))
-					execUI(SLIDER, &slider);
+					execUI(BACKLIGHT, &slider);
 			}
 		}
 		p += sizeof(struct inotify_event) + ev->len;

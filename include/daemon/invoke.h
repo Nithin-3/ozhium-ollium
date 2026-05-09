@@ -7,4 +7,4 @@
  * @param element The GUI element type (SLIDER or TEXT)
  * @param data Pointer to sliderData or textData depending on element type
  */
-void execUI(const GUI_ELEMENT element, void *data);
+void execUI(const ACTION action, void *data);
