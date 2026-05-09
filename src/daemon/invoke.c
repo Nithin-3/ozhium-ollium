@@ -24,9 +24,6 @@
  * ui element and action
  */
 
-const char *actionToString(ACTION a);
-static const char *elementToString(GUI_ELEMENT e);
-
 static void reapChildren(int sig) {
 	(void)sig;
 	while (waitpid(-1, NULL, WNOHANG) > 0)
@@ -91,48 +88,4 @@ void execUI(const GUI_ELEMENT element, void *data) {
 		_exit(1);
 	}
 	fprintf(stderr, "[execUI] parent: child pid=%d\n", pid);
-}
-
-const char *actionToString(ACTION a) {
-	switch (a) {
-		case BACKLIGHT:
-			return "s0";
-		case AUDIO:
-			return "s1";
-		case AUDIO_MUTE:
-			return "s2";
-		case MIC:
-			return "s3";
-		case MIC_MUTE:
-			return "s4";
-		case BAT_LOW:
-			return "t0";
-		case BAT_FULL:
-			return "t1";
-		case BAT_CHARGE:
-			return "t2";
-		case BAT_DISCHARGE:
-			return "t3";
-		case BAT_IDEL:
-			return "t4";
-		case WIFI:
-			return "t5";
-		case ETHERNET:
-			return "t6";
-		case BLUETOOTH:
-			return "t7";
-		default:
-			return "?";
-	}
-}
-
-static const char *elementToString(GUI_ELEMENT e) {
-	switch (e) {
-		case SLIDER:
-			return "0";
-		case TEXT:
-			return "1";
-		default:
-			return "0";
-	}
 }

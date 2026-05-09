@@ -1,13 +1,7 @@
 #pragma once
 
+#include "shared/common.h"
 #include <stddef.h>
-
-/**
- * @brief Find the configuration file path
- * @param filename The configuration filename to search for
- * @return Full path to the config file, or NULL if not found
- */
-char *findConfigPath(const char *filename);
 
 /**
  * @brief Get the directory path where the executable is located
@@ -31,3 +25,8 @@ int catFile(const char *p, int *v);
  * @return 1 on success, 0 on failure
  */
 int catFileStr(const char *p, char *v, size_t maxLen);
+
+
+const char *actionToString(ACTION a);
+const char *elementToString(GUI_ELEMENT e);
+

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glib.h>
 #include <stdbool.h>
 
 /**
@@ -48,11 +47,3 @@ extern TextConfig textConfig;
  */
 void loadConfig(void);
 
-/**
- * @brief Replace all occurrences of a substring in a string
- * @param src Source string
- * @param find Substring to find
- * @param replace Replacement string
- * @return Newly allocated string with replacements, caller must free
- */
-char *strReplace(const char *src, const char *find, const char *replace);

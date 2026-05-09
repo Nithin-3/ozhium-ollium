@@ -8,6 +8,7 @@
  */
 
 #include "ui/builder.h"
+#include "ui/tool.h"
 #include "gtk/gtk.h"
 #include "gtk/gtkshortcut.h"
 #include "shared/common.h"

@@ -8,7 +8,7 @@
  */
 
 #include "ui/window.h"
-#include "ui/tool.h"
+#include "shared/common.h"
 #include "ui/config.h"
 #include <gtk4-layer-shell/gtk4-layer-shell.h>
 #include <stdio.h>
