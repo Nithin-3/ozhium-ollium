@@ -26,7 +26,5 @@ int catFile(const char *p, int *v);
  */
 int catFileStr(const char *p, char *v, size_t maxLen);
 
-
 const char *actionToString(ACTION a);
 const char *elementToString(GUI_ELEMENT e);
-

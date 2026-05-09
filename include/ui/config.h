@@ -46,4 +46,3 @@ extern TextConfig textConfig;
  * @brief Load configuration from config file
  */
 void loadConfig(void);
-

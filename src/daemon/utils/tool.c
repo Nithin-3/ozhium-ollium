@@ -53,8 +53,6 @@ int catFileStr(const char *p, char *v, size_t maxLen) {
 	return r == 1;	// false on EOF or 0 (error)
 }
 
-
-
 const char *actionToString(ACTION a) {
 	switch (a) {
 		case BACKLIGHT:

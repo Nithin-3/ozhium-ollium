@@ -6,4 +6,3 @@
  *
  * tool.c - Utility functions
  */
-
