@@ -30,6 +30,7 @@ static pa_io_event *netlink_io = NULL;
 static pa_io_event *uevent_io = NULL;
 static pa_mainloop_api *netlink_api = NULL;
 static uint32_t prev_flags[MAX_INTERFACES] = { 0 };
+static ACTION act = INVALID;
 
 int is_wifi(const char *ifname) {
 	char path[256];
@@ -150,7 +151,6 @@ void ueventRecv(int fd) {
 	if (0 == strcmp(subsystem, "power_supply") && 0 == strcmp(action, "change") && 0 == strcmp(power_supply_type, "Battery")) {
 		sleep(1);
 		textData t = { 0 };
-		static ACTION act = INVALID;
 		getBattery(&t);
 		if (t.action == act)
 			return;
@@ -248,6 +248,10 @@ int initNetlink(pa_mainloop_api *api) {
 		uevent_fd = -1;
 		return -1;
 	}
+	textData t = { 0 };
+	getBattery(&t);
+	act = t.action;
+
 	uevent_io = api->io_new(api, uevent_fd, PA_IO_EVENT_INPUT, ueventCb, NULL);
 
 	fprintf(stdout, "[netlink] monitoring net, bluetooth, battery\n");
