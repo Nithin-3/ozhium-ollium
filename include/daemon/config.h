@@ -1,9 +1,19 @@
+/*
+ * Copyright (c) 2026, ozhium-ollium
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * https://github.com/Nithin-3/ozhium-ollium
+ *
+ * config.h - Daemon configuration
+ */
 #pragma once
 
 #include "shared/common.h"
 
 /**
- * @brief Get a configuration value from the daemon config file CHECK RETURN VALUE IS EMPTY
+ * @brief Get a configuration value from the daemon config file
  * @param section The section name in the config file
  * @param key The configuration key to retrieve
  * @return String value of the configuration, or "" on failure

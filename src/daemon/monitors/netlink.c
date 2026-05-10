@@ -4,7 +4,9 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * ozhium-ollium.c - netlink socket monitoring
+ * https://github.com/Nithin-3/ozhium-ollium
+ *
+ * netlink.c - netlink socket monitoring
  */
 
 #include "daemon/monitors/netlink.h"

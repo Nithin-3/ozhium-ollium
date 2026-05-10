@@ -4,7 +4,9 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * common.c - Shared utilities (placeholder)
+ * https://github.com/Nithin-3/ozhium-ollium
+ *
+ * common.c - Shared utilities
  */
 
 #include <stdlib.h>

@@ -4,6 +4,8 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
+ * https://github.com/Nithin-3/ozhium-ollium
+ *
  * inotify.c - inotify monitoring for backlight changes
  */
 

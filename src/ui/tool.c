@@ -4,5 +4,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * tool.c - Utility functions
+ * https://github.com/Nithin-3/ozhium-ollium
+ *
+ * tool.c - UI utility functions
  */
