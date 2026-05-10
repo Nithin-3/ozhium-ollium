@@ -102,3 +102,8 @@ When using or modifying this code, you must include the original license and att
 ## Contributing
 
 Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+
+## Third Party Libraries
+
+- [inih](https://github.com/benhoyt/inih) — INI file parser (BSD 3-Clause)
+- [GTK4](https://gtk.org/) — UI toolkit (LGPL-2.1+)
