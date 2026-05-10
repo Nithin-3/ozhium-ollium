@@ -16,7 +16,6 @@ Runtime Dependencies
   UI (ozhium-ollium-ui):
     - gtk4            (GTK+ 4.0)
     - gtk4-layer-shell
-    - glib2           (GLib)
 
 System Requirements
 -------------------
