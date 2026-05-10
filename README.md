@@ -1,6 +1,7 @@
 # ozhium-ollium
 
-A daemon that monitors Linux backlight and PulseAudio volume changes and triggers a UI callback when they occur.
+ozhium-ollium is a Linux daemon that monitors system events and displays a configurable GTK4 overlay UI for real-time feedback.
+The project originally began as a simple utility focused only on brightness and audio level changes — reflected in its name: “ozhium” (Tamil-inspired for light) and “ollium” (Tamil-inspired for sound). As the project evolved, support expanded to battery, network, Bluetooth, and other system events, while retaining the original name that represented its beginnings.
 
 ## Features
 
@@ -80,6 +81,11 @@ The project consists of two main components:
 - Renders on-screen display (OSD) notifications
 - Uses GTK4 and gtk4-layer-shell for window rendering
 - Receives callbacks from the daemon
+
+## It Is Not
+- change value (backlight,audio,mic)
+- need root permission
+- listen keylog
 
 ## Building
 
