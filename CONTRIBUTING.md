@@ -83,7 +83,7 @@ make check-format
 
 This project uses consistent naming across code and configuration:
 
-- **Global Variables & Functions:** `snake_case` (e.g., `netlink_fd=0`, `initNetlink()`)
+- **Global Variables & Functions:** `snake_case` & `camelCase` (e.g., `netlink_fd=0`, `initNetlink()`)
 - **Config keys:** `dash-style` (e.g., `audio-mute`, `bat-full`, not `audio_mute`)
 
 ### Project Structure
