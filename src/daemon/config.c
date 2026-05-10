@@ -41,23 +41,23 @@ static const char *actionToName(ACTION a) {
 		case AUDIO:
 			return "audio";
 		case AUDIO_MUTE:
-			return "audio_mute";
+			return "audio-mute";
 		case MIC:
 			return "mic";
 		case MIC_MUTE:
-			return "mic_mute";
+			return "mic-mute";
 		case BAT_CRIT:
-			return "bat_crit";
+			return "bat-crit";
 		case BAT_LOW:
-			return "bat_low";
+			return "bat-low";
 		case BAT_FULL:
-			return "bat_full";
+			return "bat-full";
 		case BAT_CHARGE:
-			return "bat_charge";
+			return "bat-charge";
 		case BAT_DISCHARGE:
-			return "bat_discharge";
+			return "bat-discharge";
 		case BAT_IDEL:
-			return "bat_idel";
+			return "bat-idel";
 		case WIFI:
 			return "wifi";
 		case ETHERNET:
