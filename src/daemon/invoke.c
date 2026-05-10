@@ -34,21 +34,38 @@ static void initSigchld(void) {
 
 void execUI(const ACTION action, void *data) {
 	initSigchld();
-
 	fprintf(stderr, "[execUI] forking...\n");
 	pid_t pid = fork();
 	if (pid < 0) {
 		perror("fork failed");
 		return;
 	}
-
 	if (pid == 0) {
 		char **args = daemonExec(action, data);
 		if (args) {
-			execv(args[0], args);
-			perror("execv");
+			execvp(args[0], args);
+			perror("execvp");
 		}
 		_exit(1);
 	}
-	fprintf(stderr, "[execUI] parent: child pid=%d\n", pid);
+
+	// Parent continues here
+	if (!isDaemonNativeExec(action))
+		return;
+
+	pid_t pid2 = fork();
+	if (pid2 < 0) {
+		perror("fork failed (native exec)");
+		return;
+	}
+	if (pid2 != 0)
+		return;	 // parent returns
+
+	// Second child
+	char **args = daemonNativeExec(action, data);
+	if (args) {
+		execvp(args[0], args);
+		perror("execvp");
+	}
+	_exit(1);
 }

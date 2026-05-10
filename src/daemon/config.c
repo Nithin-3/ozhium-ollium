@@ -135,9 +135,9 @@ static char **buildArgs(const char **parts, int n) {
 char *daemonConfigGet(const char *section, const char *key) {
 	char *path = findConfigPath("ozhium-ollium.conf");
 	if (!path)
-		return NULL;
+		return "";
 
-	struct cfgCtx ctx = { .section = section, .key = key, .val = NULL };
+	struct cfgCtx ctx = { .section = section, .key = key, .val = "" };
 	ini_parse(path, configHandler, &ctx);
 	return ctx.val;
 }
@@ -185,7 +185,7 @@ char **daemonNativeExec(ACTION a, void *data) {
 
 char **daemonExec(ACTION a, void *data) {
 	char **cmd = splitBySpace(daemonConfigGet("exec", actionToName(a)));
-	if (cmd)
+	if (cmd && cmd[0])
 		switch (a) {
 			case BACKLIGHT:
 			case AUDIO:
@@ -217,4 +217,11 @@ char **daemonExec(ACTION a, void *data) {
 			}
 		}
 	return daemonNativeExec(a, data);
+}
+
+int isDaemonNativeExec(ACTION a) {
+	char *cmd = daemonConfigGet("exec", actionToName(a));
+	if (cmd && cmd[0])
+		return strcmp(daemonConfigGet("native.exec", actionToName(a)), "off") != 0;
+	return 1;
 }

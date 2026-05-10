@@ -30,6 +30,11 @@ typedef struct {
 	ACTION action;
 } textData;
 
+/**
+ * @brief Find the full path to a configuration file
+ * @param filename The name of the configuration file to locate
+ * @return Full path to the config file, or NULL if not found
+ */
 char *findConfigPath(const char *filename);
 
 /**
