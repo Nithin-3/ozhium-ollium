@@ -13,6 +13,7 @@ The project originally began as a simple utility focused only on brightness and 
 - System daemon for background operation
 - Lightweight and efficient implementation
 - Support for multiple audio devices
+- execute your own commend on state change
 
 ## System Requirements
 
