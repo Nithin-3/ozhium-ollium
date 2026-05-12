@@ -69,20 +69,22 @@ const char *actionToString(ACTION a) {
 			return "s4";
 		case BAT_LOW:
 			return "t0";
-		case BAT_FULL:
+		case BAT_CRIT:
 			return "t1";
-		case BAT_CHARGE:
+		case BAT_FULL:
 			return "t2";
-		case BAT_DISCHARGE:
+		case BAT_CHARGE:
 			return "t3";
-		case BAT_IDEL:
+		case BAT_DISCHARGE:
 			return "t4";
-		case WIFI:
+		case BAT_IDEL:
 			return "t5";
-		case ETHERNET:
+		case WIFI:
 			return "t6";
-		case BLUETOOTH:
+		case ETHERNET:
 			return "t7";
+		case BLUETOOTH:
+			return "t8";
 		default:
 			return "?";
 	}
