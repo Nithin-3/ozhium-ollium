@@ -60,7 +60,7 @@ UI_OBJ     = $(UI_SRC:src/%.c=$(OBJ_DIR)/%.o) $(INI_OBJ)
 # Auto-generate dependency files
 DEPS = $(DAEMON_OBJ:.o=.d) $(UI_OBJ:.o=.d)
 
-.PHONY: all clean format check-format
+.PHONY: all clean format check-format compile_commands
 
 all: $(TARGET) $(UI_TARGET)
 
@@ -105,3 +105,17 @@ format:
 
 check-format:
 	find src/ include/ -name "*.[ch]" | xargs clang-format --dry-run --Werror
+
+compile_commands:
+	@printf '[\n' > compile_commands.json
+	@for src in $(DAEMON_SRC); do \
+		obj=$$(echo "$$src" | sed 's|src/|out/|; s|\.c$$|.o|'); \
+		printf '  {"directory":"$(CURDIR)","file":"%s","command":"gcc $(CFLAGS) -MMD -MP -c %s -o %s","output":"%s"},\n' "$$src" "$$src" "$$obj" "$$obj" >> compile_commands.json; \
+	done
+	@for src in $(filter-out src/shared/common.c,$(UI_SRC)); do \
+		obj=$$(echo "$$src" | sed 's|src/|out/|; s|\.c$$|.o|'); \
+		printf '  {"directory":"$(CURDIR)","file":"%s","command":"gcc $(CFLAGS) $(GTK_CFLAGS) -MMD -MP -c %s -o %s","output":"%s"},\n' "$$src" "$$src" "$$obj" "$$obj" >> compile_commands.json; \
+	done
+	@obj="out/third_party/inih/ini.o"; \
+	printf '  {"directory":"$(CURDIR)","file":"third_party/inih/ini.c","command":"gcc $(CFLAGS) -MMD -MP -c third_party/inih/ini.c -o %s","output":"%s"}\n' "$$obj" "$$obj" >> compile_commands.json
+	@printf ']\n' >> compile_commands.json
