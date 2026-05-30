@@ -22,11 +22,15 @@ struct cfgCtx {
 	char *val;
 };
 
+/*
+ * get value inside [daemon.<any>]
+ * used of call_back in ini_parse
+ */
 static int configHandler(void *user, const char *section, const char *name, const char *value) {
 	struct cfgCtx *ctx = user;
 
 	char buf[32];
-	snprintf(buf, sizeof(buf), "daemon.%s", ctx->section);
+	snprintf(buf, sizeof(buf), "daemon.%s", ctx->section);	// config block [daemon.<section>]
 
 	if (strcmp(section, buf) == 0 && strcmp(name, ctx->key) == 0) {
 		ctx->val = strdup(value);
@@ -77,45 +81,71 @@ static void freeArgs(char **args, int n) {
 	free(args);
 }
 
-static char **splitBySpace(const char *str) {
+static char **splitByArg(const char *str) {
 	if (!str)
 		return NULL;
 
-	// count tokens first
+	// count tokens first, respecting quoted strings
 	int n = 0;
-	char *tmp = strdup(str);
-	if (!tmp)
-		return NULL;
-	for (char *t = strtok(tmp, " "); t; t = strtok(NULL, " "))
+	const char *p = str;
+	while (*p) {
+		while (*p == ' ')
+			p++;
+		if (!*p)
+			break;
 		n++;
-	free(tmp);
+		int inQuote = 0;
+		while (*p && (*p != ' ' || inQuote)) {
+			if (*p == '"')
+				inQuote = !inQuote;
+			p++;
+		}
+	}
 
 	if (n == 0)
 		return NULL;
 
-	// allocate once, exact size
 	char **args = malloc((n + 1) * sizeof(char *));
 	if (!args)
 		return NULL;
 
-	tmp = strdup(str);
-	if (!tmp) {
-		free(args);
-		return NULL;
-	}
+	n = 0;
+	p = str;
+	while (*p) {
+		while (*p == ' ')
+			p++;
+		if (!*p)
+			break;
 
-	int i = 0;
-	for (char *t = strtok(tmp, " "); t; t = strtok(NULL, " ")) {
-		args[i] = strdup(t);
-		if (!args[i]) {
-			freeArgs(args, i);
-			free(tmp);
+		int inQuote = 0;
+		const char *start = p;
+		while (*p && (*p != ' ' || inQuote)) {
+			if (*p == '"')
+				inQuote = !inQuote;
+			p++;
+		}
+		const char *end = p;
+
+		// length without quotes
+		int len = 0;
+		for (const char *q = start; q < end; q++)
+			if (*q != '"')
+				len++;
+
+		args[n] = malloc(len + 1);
+		if (!args[n]) {
+			freeArgs(args, n);
 			return NULL;
 		}
-		i++;
+
+		int j = 0;
+		for (const char *q = start; q < end; q++)
+			if (*q != '"')
+				args[n][j++] = *q;
+		args[n][j] = '\0';
+		n++;
 	}
 	args[n] = NULL;
-	free(tmp);
 	return args;
 }
 
@@ -134,6 +164,9 @@ static char **buildArgs(const char **parts, int n) {
 	return args;
 }
 
+/*
+ * get config of daemon
+ */
 char *daemonConfigGet(const char *section, const char *key) {
 	char *path = findConfigPath("ozhium-ollium.conf");
 	if (!path)
@@ -186,7 +219,7 @@ char **daemonNativeExec(ACTION a, void *data) {
 }
 
 char **daemonExec(ACTION a, void *data) {
-	char **cmd = splitBySpace(daemonConfigGet("exec", actionToName(a)));
+	char **cmd = splitByArg(daemonConfigGet("exec", actionToName(a)));
 	if (cmd && cmd[0])
 		switch (a) {
 			case BACKLIGHT:
