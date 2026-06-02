@@ -22,7 +22,7 @@
 # Installation: See DEPENDENCIES file for detailed setup instructions
 
 CC      = gcc
-VERSION ?= 1.0.0
+VERSION ?= 1.0.1
 CFLAGS  = -Wall -Wextra -I include -I third_party/inih -DVERSION=\"$(VERSION)\"
 GTK_CFLAGS  = $(shell pkg-config --cflags gtk4 gtk4-layer-shell-0)
 GTK_LDFLAGS = $(shell pkg-config --libs gtk4 gtk4-layer-shell-0)
