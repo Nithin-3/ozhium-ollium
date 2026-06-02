@@ -26,29 +26,41 @@ static int useSyslogFlag = 0;
 
 static const char *levelStr(logLevel level) {
 	switch (level) {
-		case logError: return "ERROR";
-		case logWarn:  return "WARN";
-		case logInfo:  return "INFO";
-		case logDebug: return "DEBUG";
+		case logError:
+			return "ERROR";
+		case logWarn:
+			return "WARN";
+		case logInfo:
+			return "INFO";
+		case logDebug:
+			return "DEBUG";
 	}
 	return "UNKNOWN";
 }
 
 static int syslogMap(logLevel level) {
 	switch (level) {
-		case logError: return LOG_ERR;
-		case logWarn:  return LOG_WARNING;
-		case logInfo:  return LOG_INFO;
-		case logDebug: return LOG_DEBUG;
+		case logError:
+			return LOG_ERR;
+		case logWarn:
+			return LOG_WARNING;
+		case logInfo:
+			return LOG_INFO;
+		case logDebug:
+			return LOG_DEBUG;
 	}
 	return LOG_INFO;
 }
 
 static logLevel parseLevel(const char *s) {
-	if (strcasecmp(s, "error") == 0) return logError;
-	if (strcasecmp(s, "warn") == 0)  return logWarn;
-	if (strcasecmp(s, "info") == 0)  return logInfo;
-	if (strcasecmp(s, "debug") == 0) return logDebug;
+	if (strcasecmp(s, "error") == 0)
+		return logError;
+	if (strcasecmp(s, "warn") == 0)
+		return logWarn;
+	if (strcasecmp(s, "info") == 0)
+		return logInfo;
+	if (strcasecmp(s, "debug") == 0)
+		return logDebug;
 	return logInfo;
 }
 

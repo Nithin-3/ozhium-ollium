@@ -40,6 +40,8 @@ Icons icons = {
 	.wifi = " ",
 	.ethernet = "󰈀 ",
 	.bluetooth = "",
+	.block = "󱇰",
+	.hid = "󱖁",
 };
 
 SliderConfig sliderConfig = {
@@ -125,6 +127,10 @@ static int configHandler(void *user, const char *section, const char *name, cons
 			icons.ethernet = strdup(value);
 		else if (strcmp(name, "bluetooth") == 0)
 			icons.bluetooth = strdup(value);
+		else if (strcmp(name, "block") == 0)
+			icons.block = strdup(value);
+		else if (strcmp(name, "hid") == 0)
+			icons.hid = strdup(value);
 	}
 
 	return 1;

@@ -80,7 +80,7 @@ void execUI(const ACTION action, void *data) {
 		return;
 	}
 	if (pid2 != 0)
-		return;// parent returns
+		return;	 // parent returns
 
 	// Second child
 	childRedirect();

@@ -26,7 +26,9 @@ typedef enum { INVALID = -1,
 	       BAT_IDEL,
 	       WIFI,
 	       ETHERNET,
-	       BLUETOOTH } ACTION;
+	       BLUETOOTH,
+	       BLOCK,
+	       HID } ACTION;
 
 typedef struct {
 	float min;

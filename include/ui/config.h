@@ -25,7 +25,7 @@ typedef struct {
  */
 typedef struct {
 	char *backlight, *volume, *volumeMute, *mic, *micMute;
-	char *batLow, *batFull, *batCharge, *batDischarge, *batIdel, *batCrit, *wifi, *ethernet, *bluetooth;
+	char *batLow, *batFull, *batCharge, *batDischarge, *batIdel, *batCrit, *wifi, *ethernet, *bluetooth, *block, *hid;
 } Icons;
 
 /**

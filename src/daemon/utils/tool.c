@@ -85,6 +85,10 @@ const char *actionToString(ACTION a) {
 			return "t7";
 		case BLUETOOTH:
 			return "t8";
+		case BLOCK:
+			return "t9";
+		case HID:
+			return "t10";
 		default:
 			return "?";
 	}

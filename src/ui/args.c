@@ -50,6 +50,10 @@ ACTION argToAction(const char *s) {
 		return ETHERNET;
 	if (strcmp(s, "t8") == 0 || strcmp(s, "bluetooth") == 0)
 		return BLUETOOTH;
+	if (strcmp(s, "t9") == 0 || strcmp(s, "block") == 0)
+		return BLOCK;
+	if (strcmp(s, "t10") == 0 || strcmp(s, "hid") == 0)
+		return HID;
 	return INVALID;
 }
 

@@ -70,6 +70,10 @@ static const char *actionToName(ACTION a) {
 			return "ethernet";
 		case BLUETOOTH:
 			return "bluetooth";
+		case BLOCK:
+			return "block";
+		case HID:
+			return "hid";
 		default:
 			return "invalid";
 	}
@@ -207,6 +211,8 @@ char **daemonNativeExec(ACTION a, void *data) {
 		case WIFI:
 		case ETHERNET:
 		case BLUETOOTH:
+		case BLOCK:
+		case HID:
 		case INVALID: {
 			textData *t = (textData *)data;
 			char actionBuf[32];
@@ -244,6 +250,8 @@ char **daemonExec(ACTION a, void *data) {
 			case WIFI:
 			case ETHERNET:
 			case BLUETOOTH:
+			case BLOCK:
+			case HID:
 			case INVALID: {
 				textData *t = (textData *)data;
 				for (int i = 1; cmd[i] != NULL; i++)

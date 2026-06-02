@@ -192,6 +192,10 @@ char *getIconForAction(ACTION action) {
 			return icons.ethernet;
 		case BLUETOOTH:
 			return icons.bluetooth;
+		case BLOCK:
+			return icons.block;
+		case HID:
+			return icons.hid;
 		default:
 			return " ";
 	}

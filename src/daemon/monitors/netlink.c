@@ -166,18 +166,18 @@ void ueventRecv(int fd) {
 	if (0 == strcmp(subsystem, "block") && name[0]) {
 		logInfo("[usb] device=%s %s", name, action);
 		textData t = { 0 };
-		t.action = INVALID;
+		t.action = BLOCK;
 		snprintf(t.text, sizeof(t.text), "[block] %s %s", name, action);
-		execUI(INVALID, &t);
+		execUI(BLOCK, &t);
 		return;
 	}
 
 	if (0 == strcmp(subsystem, "hid") && name[0]) {
 		logInfo("[hid] %s %s", name, action);
 		textData t = { 0 };
-		t.action = INVALID;
+		t.action = HID;
 		snprintf(t.text, sizeof(t.text), "[HID] %s %s", name, action);
-		execUI(INVALID, &t);
+		execUI(HID, &t);
 		return;
 	}
 
@@ -188,7 +188,7 @@ void ueventRecv(int fd) {
 				textData t = { 0 };
 				t.action = BLUETOOTH;
 				snprintf(t.text, sizeof(t.text), "%s %s", name, action);
-				execUI(INVALID, &t);
+				execUI(BLUETOOTH, &t);
 				break;
 			case 0:
 				break;
