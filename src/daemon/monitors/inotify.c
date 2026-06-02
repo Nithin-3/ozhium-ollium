@@ -13,7 +13,10 @@
 #include "daemon/invoke.h"
 #include "daemon/utils/backlight.h"
 #include "shared/common.h"
+#include "shared/log.h"
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/inotify.h>
 #include <unistd.h>
 
@@ -46,23 +49,21 @@ static void inotifyCb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_
 int initInotify(pa_mainloop_api *api) {
 	in_fd = inotify_init();
 	if (in_fd < 0) {
-		perror("inotify init");
+		logError("inotify init: %s", strerror(errno));
 		return -1;
 	}
 
 	if (getBacklightPaths(bri_path, max_path, PATH_MAX)) {
-		fprintf(stdout, "could not find backlight path\n");
-		fflush(stdout);
+		logInfo("could not find backlight path");
 	} else {
 		bri_wd = inotify_add_watch(in_fd, bri_path, IN_MODIFY);
 		if (bri_wd < 0) {
-			perror("inotify watch");
+			logError("inotify watch: %s", strerror(errno));
 			close(in_fd);
 			in_fd = -1;
 			return -1;
 		}
-		fprintf(stdout, "[inotify watch] path : %s\n", bri_path);
-		fflush(stdout);
+		logInfo("[inotify watch] path: %s", bri_path);
 	}
 
 	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotifyCb, NULL);

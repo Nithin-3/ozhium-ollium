@@ -11,6 +11,7 @@
 
 #include "daemon/invoke.h"
 #include "daemon/monitors/pulse.h"
+#include "shared/log.h"
 #include <pulse/pulseaudio.h>
 #include <stdio.h>
 
@@ -93,12 +94,12 @@ static void contextStateCb(pa_context *c, void *ud) {
 int initPulseAudio(pa_mainloop_api *api) {
 	pa_ctx = pa_context_new(api, "pulse-sink-watcher");
 	if (!pa_ctx) {
-		fprintf(stderr, "Failed to create PA context\n");
+		logError("Failed to create PA context");
 		return 1;
 	}
 	pa_context_set_state_callback(pa_ctx, contextStateCb, NULL);  // set callback for changes
 	if (0 > pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOFLAGS, NULL)) {
-		fprintf(stderr, "PA connect failed: %s\n", pa_strerror(pa_context_errno(pa_ctx)));
+		logError("PA connect failed: %s", pa_strerror(pa_context_errno(pa_ctx)));
 		pa_context_unref(pa_ctx);
 		return 1;
 	}

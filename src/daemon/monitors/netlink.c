@@ -13,17 +13,19 @@
 #include "daemon/utils/battery.h"
 #include "daemon/invoke.h"
 #include "shared/common.h"
+#include "shared/log.h"
 #include <asm/types.h>
+#include <errno.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <linux/if_arp.h>
 #include <linux/input.h>
 #include <stdint.h>
-#include <sys/socket.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #define MAX_INTERFACES 64
 
 static int netlink_fd = -1;
@@ -81,13 +83,13 @@ void netlinkRecv(int fd) {
 						textData t = { 0 };
 						t.action = WIFI;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
-						fprintf(stdout, "[netlink] net: %s\n", t.text);
+						logInfo("[netlink] net: %s", t.text);
 						execUI(WIFI, &t);
 					} else if (ifi->ifi_type == ARPHRD_ETHER) {
 						textData t = { 0 };
 						t.action = ETHERNET;
 						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
-						fprintf(stdout, "[netlink] net: %s\n", t.text);
+						logInfo("[netlink] net: %s", t.text);
 						execUI(ETHERNET, &t);
 					}
 				}
@@ -137,10 +139,10 @@ void ueventRecv(int fd) {
 			sscanf(p + 22, "%u", &power_supply_capacity);
 		else if (strncmp(p, "PRODUCT=", 8) == 0)
 			sscanf(p + 8, "%x/%x/%x/%x", &product.bus, &product.vendor, &product.product, &product.version);  // NOTE: input event -> bus/vendor/product/version : these are the value PRODUCT= have
-		// fprintf(stdout, "%s\n",p);
+		// logDebug("%s", p);
 		p += strlen(p) + 1;
 	}
-	// fprintf(stdout, "\n");
+	// logDebug("");
 
 	// if (0 == strcmp(subsystem, "bluetooth")) {
 	// 	textData t = {0};
@@ -162,7 +164,7 @@ void ueventRecv(int fd) {
 	}
 
 	if (0 == strcmp(subsystem, "block") && name[0]) {
-		fprintf(stdout, "[usb] device=%s %s\n", name, action);
+		logInfo("[usb] device=%s %s", name, action);
 		textData t = { 0 };
 		t.action = INVALID;
 		snprintf(t.text, sizeof(t.text), "[block] %s %s", name, action);
@@ -171,7 +173,7 @@ void ueventRecv(int fd) {
 	}
 
 	if (0 == strcmp(subsystem, "hid") && name[0]) {
-		fprintf(stdout, "[hid] %s %s\n", name, action);
+		logInfo("[hid] %s %s", name, action);
 		textData t = { 0 };
 		t.action = INVALID;
 		snprintf(t.text, sizeof(t.text), "[HID] %s %s", name, action);
@@ -182,7 +184,7 @@ void ueventRecv(int fd) {
 	if (0 == strcmp(subsystem, "input") && name[0]) {
 		switch (product.bus) {
 			case BUS_BLUETOOTH:  // bluetooth bus -> 0x05 '5'
-				fprintf(stdout, "[input] %s %s\n", name, action);
+				logInfo("[input] %s %s", name, action);
 				textData t = { 0 };
 				t.action = BLUETOOTH;
 				snprintf(t.text, sizeof(t.text), "%s %s", name, action);
@@ -191,7 +193,7 @@ void ueventRecv(int fd) {
 			case 0:
 				break;
 			default:
-				fprintf(stdout, "%d this bus not handle", product.bus);
+				logInfo("%d this bus not handled", product.bus);
 		}
 		return;
 	}
@@ -220,7 +222,7 @@ int initNetlink(pa_mainloop_api *api) {
 
 	netlink_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
 	if (netlink_fd < 0) {
-		perror("netlink socket");
+		logError("netlink socket: %s", strerror(errno));
 		return -1;
 	}
 
@@ -228,7 +230,7 @@ int initNetlink(pa_mainloop_api *api) {
 	addr.nl_family = AF_NETLINK;
 	addr.nl_groups = RTMGRP_LINK;
 	if (bind(netlink_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		perror("netlink bind");
+		logError("netlink bind: %s", strerror(errno));
 		close(netlink_fd);
 		netlink_fd = -1;
 		return -1;
@@ -237,7 +239,7 @@ int initNetlink(pa_mainloop_api *api) {
 
 	uevent_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_KOBJECT_UEVENT);
 	if (uevent_fd < 0) {
-		perror("uevent socket");
+		logError("uevent socket: %s", strerror(errno));
 		return -1;
 	}
 
@@ -245,7 +247,7 @@ int initNetlink(pa_mainloop_api *api) {
 	uaddr.nl_family = AF_NETLINK;
 	uaddr.nl_groups = 1;
 	if (bind(uevent_fd, (struct sockaddr *)&uaddr, sizeof(uaddr)) < 0) {
-		perror("uevent bind");
+		logError("uevent bind: %s", strerror(errno));
 		close(uevent_fd);
 		uevent_fd = -1;
 		return -1;
@@ -256,7 +258,7 @@ int initNetlink(pa_mainloop_api *api) {
 
 	uevent_io = api->io_new(api, uevent_fd, PA_IO_EVENT_INPUT, ueventCb, NULL);
 
-	fprintf(stdout, "[netlink] monitoring net, bluetooth, battery\n");
+	logInfo("[netlink] monitoring net, bluetooth, battery");
 	return 0;
 }
 

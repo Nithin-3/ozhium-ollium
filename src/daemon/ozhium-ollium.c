@@ -12,41 +12,39 @@
 #include "daemon/monitors/inotify.h"
 #include "daemon/monitors/netlink.h"
 #include "daemon/monitors/pulse.h"
-#include <stdio.h>
+#include "shared/log.h"
 #include <unistd.h>
 
 // Main entry point - initializes inotify, netlink, and PulseAudio then runs
 // mainloop
 int main() {
-	fprintf(stdout, "ozhium-ollium started ....\n");
-	fflush(stdout);
+	logInitFromConfig();
+	logInfo("ozhium-ollium started");
 	pa_mainloop *ml = pa_mainloop_new();
 	if (!ml) {
-		fprintf(stderr, "Failed to create mainloop\n");
+		logError("Failed to create mainloop");
 		return 1;
 	}
 	pa_mainloop_api *api = pa_mainloop_get_api(ml);
 
 	if (initInotify(api) != 0) {
-		fprintf(stderr, "Failed to init inotify\n");
+		logError("Failed to init inotify");
 		pa_mainloop_free(ml);
 		return 1;
 	}
 
 	if (initNetlink(api) != 0) {
-		fprintf(stderr, "Failed to init netlink\n");
-		fflush(stderr);
+		logError("Failed to init netlink");
 	}
 
 	if (initPulseAudio(api) != 0) {
-		fprintf(stderr, "Failed to init PulseAudio\n");
+		logError("Failed to init PulseAudio");
 		cleanupInotify();
 		pa_mainloop_free(ml);
 		return 1;
 	}
 
-	fprintf(stdout, "watch pulse sink source\n(Ctrl+C to exit)\n");
-	fflush(stdout);
+	logInfo("watch pulse sink source (Ctrl+C to exit)");
 	pa_mainloop_run(ml, NULL);
 
 	if (pa_ctx)

@@ -11,10 +11,28 @@
 
 #include "daemon/invoke.h"
 #include "daemon/config.h"
+#include "shared/log.h"
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+static void childRedirect(void) {
+	int logFd = logGetFd();
+	if (logFd >= 0) {
+		dup2(logFd, STDOUT_FILENO);
+		dup2(logFd, STDERR_FILENO);
+	} else {
+		FILE *null = fopen("/dev/null", "w");
+		if (null) {
+			dup2(fileno(null), STDOUT_FILENO);
+			dup2(fileno(null), STDERR_FILENO);
+			fclose(null);
+		}
+	}
+}
 
 static void reapChildren(int sig) {
 	(void)sig;
@@ -36,17 +54,18 @@ static void initSigchld(void) {
 
 void execUI(const ACTION action, void *data) {
 	initSigchld();
-	fprintf(stderr, "[execUI] forking...\n");
+	logInfo("[execUI] forking...");
 	pid_t pid = fork();
 	if (pid < 0) {
-		perror("fork failed");
+		logError("fork failed: %s", strerror(errno));
 		return;
 	}
 	if (pid == 0) {
+		childRedirect();
 		char **args = daemonExec(action, data);
 		if (args) {
 			execvp(args[0], args);
-			perror("execvp");
+			logError("execvp: %s", strerror(errno));
 		}
 		_exit(1);
 	}
@@ -57,17 +76,18 @@ void execUI(const ACTION action, void *data) {
 
 	pid_t pid2 = fork();
 	if (pid2 < 0) {
-		perror("fork failed (native exec)");
+		logError("fork failed (native exec): %s", strerror(errno));
 		return;
 	}
 	if (pid2 != 0)
-		return;	 // parent returns
+		return;// parent returns
 
 	// Second child
+	childRedirect();
 	char **args = daemonNativeExec(action, data);
 	if (args) {
 		execvp(args[0], args);
-		perror("execvp");
+		logError("execvp: %s", strerror(errno));
 	}
 	_exit(1);
 }

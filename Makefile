@@ -40,7 +40,8 @@ DAEMON_SRC = \
 	src/daemon/monitors/pulse.c \
 	src/daemon/monitors/netlink.c \
 	src/daemon/monitors/inotify.c \
-	src/shared/common.c
+	src/shared/common.c \
+	src/shared/log.c
 
 UI_SRC = \
 	src/ui/main.c \
@@ -49,7 +50,8 @@ UI_SRC = \
 	src/ui/builder.c \
 	src/ui/args.c \
 	src/ui/tool.c \
-	src/shared/common.c
+	src/shared/common.c \
+	src/shared/log.c
 
 INI_OBJ = $(OBJ_DIR)/third_party/inih/ini.o
 
@@ -112,7 +114,7 @@ compile_commands:
 		obj=$$(echo "$$src" | sed 's|src/|out/|; s|\.c$$|.o|'); \
 		printf '  {"directory":"$(CURDIR)","file":"%s","command":"gcc $(CFLAGS) -MMD -MP -c %s -o %s","output":"%s"},\n' "$$src" "$$src" "$$obj" "$$obj" >> compile_commands.json; \
 	done
-	@for src in $(filter-out src/shared/common.c,$(UI_SRC)); do \
+	@for src in $(filter-out src/shared/common.c src/shared/log.c,$(UI_SRC)); do \
 		obj=$$(echo "$$src" | sed 's|src/|out/|; s|\.c$$|.o|'); \
 		printf '  {"directory":"$(CURDIR)","file":"%s","command":"gcc $(CFLAGS) $(GTK_CFLAGS) -MMD -MP -c %s -o %s","output":"%s"},\n' "$$src" "$$src" "$$obj" "$$obj" >> compile_commands.json; \
 	done
