@@ -70,6 +70,8 @@ void logInit(const char *filepath, logLevel level, int useSyslog) {
 
 	if (filepath && filepath[0]) {
 		logFile = fopen(filepath, "a");
+		if (!logFile)
+			fprintf(stderr, "[log] failed to open log file: %s\n", filepath);
 	}
 
 	if (useSyslogFlag) {
@@ -106,7 +108,9 @@ struct logCfgCtx {
 
 static int logConfigHandler(void *user, const char *section, const char *name, const char *value) {
 	struct logCfgCtx *ctx = user;
-	(void)section;
+
+	if (strcmp(section, "log") != 0)
+		return 1;
 
 	if (strcmp(name, "file") == 0) {
 		free(ctx->file);
