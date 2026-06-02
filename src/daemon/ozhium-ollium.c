@@ -13,11 +13,22 @@
 #include "daemon/monitors/netlink.h"
 #include "daemon/monitors/pulse.h"
 #include "shared/log.h"
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 // Main entry point - initializes inotify, netlink, and PulseAudio then runs
 // mainloop
-int main() {
+int main(int argc, char *argv[]) {
+	if (argc > 1) {
+		if (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-V") == 0) {
+			printf("ozhium-ollium v%s\n", VERSION);
+			return 0;
+		}
+		fprintf(stderr, "Unknown argument: %s\n", argv[1]);
+		fprintf(stderr, "Usage: ozhium-ollium [--version|-V]\n");
+		return 1;
+	}
 	logInitFromConfig();
 	logInfo("ozhium-ollium started");
 	pa_mainloop *ml = pa_mainloop_new();
