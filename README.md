@@ -59,6 +59,13 @@ cd ozhium-ollium
 make
 ```
 
+4. Install (optional):
+```bash
+make install                    # installs to /usr/local
+make install PREFIX=/usr       # installs to /usr
+make install DESTDIR=/tmp/pkg PREFIX=/usr  # staging for packaging
+```
+
 ## Usage
 
 Run the daemon:
@@ -94,6 +101,20 @@ To build both the daemon and UI:
 ```bash
 make
 ```
+
+Install system-wide (defaults to `/usr/local`):
+```bash
+make install
+```
+
+Override installation prefix:
+```bash
+make install PREFIX=/usr          # install to /usr
+make install DESTDIR=/tmp/pkg PREFIX=/usr  # staging directory for packaging
+```
+
+- **`PREFIX`** — installation root (default: `/usr/local`). Binaries go to `$PREFIX/bin`, data to `$PREFIX/share/ozhium-ollium/`.
+- **`DESTDIR`** — staging directory prepended to all paths. Used when building packages (`.deb`/`.rpm`).
 
 To clean build artifacts:
 ```bash

@@ -23,6 +23,7 @@
 
 CC      = gcc
 VERSION ?= 1.0.1
+PREFIX  ?= /usr/local
 CFLAGS  = -Wall -Wextra -I include -I third_party/inih -DVERSION=\"$(VERSION)\"
 GTK_CFLAGS  = $(shell pkg-config --cflags gtk4 gtk4-layer-shell-0)
 GTK_LDFLAGS = $(shell pkg-config --libs gtk4 gtk4-layer-shell-0)
@@ -63,7 +64,7 @@ UI_OBJ     = $(UI_SRC:src/%.c=$(OBJ_DIR)/%.o) $(INI_OBJ)
 # Auto-generate dependency files
 DEPS = $(DAEMON_OBJ:.o=.d) $(UI_OBJ:.o=.d)
 
-.PHONY: all clean format check-format compile_commands
+.PHONY: all clean format check-format compile_commands install
 
 all: $(TARGET) $(UI_TARGET)
 
@@ -108,6 +109,13 @@ format:
 
 check-format:
 	find src/ include/ -name "*.[ch]" | xargs clang-format --dry-run --Werror
+
+install: all
+	mkdir -p $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/share/ozhium-ollium
+	install -m 0755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+	install -m 0755 $(UI_TARGET) $(DESTDIR)$(PREFIX)/bin/$(UI_TARGET)
+	install -m 0644 example/ozhium-ollium.conf $(DESTDIR)$(PREFIX)/share/ozhium-ollium/
+	install -m 0644 example/style.css $(DESTDIR)$(PREFIX)/share/ozhium-ollium/
 
 compile_commands:
 	@printf '[\n' > compile_commands.json
