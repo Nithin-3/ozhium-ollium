@@ -3,3 +3,8 @@ out/
 ./compile_commands.json
 ozhium-ollium
 ozhium-ollium-ui
+*.deb
+*.rpm
+*.spec
+build-pkg.sh
+debian/**
