@@ -9,9 +9,9 @@
  * window.c - Window management
  */
 
-#include "ui/window.h"
+#include "ui/gtk/window.h"
 #include "shared/common.h"
-#include "ui/config.h"
+#include "ui/gtk/config.h"
 #include <gtk4-layer-shell/gtk4-layer-shell.h>
 #include <stdio.h>
 #include <string.h>

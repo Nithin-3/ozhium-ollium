@@ -9,7 +9,7 @@
  * args.c - Argument parsing
  */
 
-#include "ui/args.h"
+#include "ui/gtk/args.h"
 #include "shared/common.h"
 #include <getopt.h>
 #include <stdlib.h>

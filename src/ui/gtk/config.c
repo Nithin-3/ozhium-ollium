@@ -9,7 +9,7 @@
  * config.c - Configuration loading
  */
 
-#include "ui/config.h"
+#include "ui/gtk/config.h"
 #include "shared/common.h"
 #include "ini.h"
 #include <string.h>

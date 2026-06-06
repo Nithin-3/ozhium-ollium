@@ -9,10 +9,10 @@
  * main.c - UI entry point
  */
 
-#include "ui/config.h"
-#include "ui/window.h"
-#include "ui/builder.h"
-#include "ui/args.h"
+#include "ui/gtk/config.h"
+#include "ui/gtk/window.h"
+#include "ui/gtk/builder.h"
+#include "ui/gtk/args.h"
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <string.h>

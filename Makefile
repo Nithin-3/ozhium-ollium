@@ -11,7 +11,7 @@
 #   DAEMON (ozhium-ollium):
 #     - libpulse (PulseAudio library) - for audio volume monitoring
 #   
-#   UI (ozhium-ollium-ui):
+#   UI/gtk (ozhium-ollium-ui):
 #     - GTK4 (GTK+ 4) - for GUI
 #     - gtk4-layer-shell - for on-screen display (OSD) rendering
 #
@@ -45,13 +45,13 @@ DAEMON_SRC = \
 	src/shared/common.c \
 	src/shared/log.c
 
-UI_SRC = \
-	src/ui/main.c \
-	src/ui/config.c \
-	src/ui/window.c \
-	src/ui/builder.c \
-	src/ui/args.c \
-	src/ui/tool.c \
+UI_GTK_SRC = \
+	src/ui/gtk/main.c \
+	src/ui/gtk/config.c \
+	src/ui/gtk/window.c \
+	src/ui/gtk/builder.c \
+	src/ui/gtk/args.c \
+	src/ui/gtk/tool.c \
 	src/shared/common.c \
 	src/shared/log.c
 
@@ -59,12 +59,12 @@ INI_OBJ = $(OBJ_DIR)/third_party/inih/ini.o
 
 # Auto-generate object paths from sources
 DAEMON_OBJ = $(DAEMON_SRC:src/%.c=$(OBJ_DIR)/%.o)
-UI_OBJ     = $(UI_SRC:src/%.c=$(OBJ_DIR)/%.o) $(INI_OBJ)
+UI_GTK_OBJ = $(UI_GTK_SRC:src/%.c=$(OBJ_DIR)/%.o) $(INI_OBJ)
 
 # Auto-generate dependency files
-DEPS = $(DAEMON_OBJ:.o=.d) $(UI_OBJ:.o=.d)
+DEPS = $(DAEMON_OBJ:.o=.d) $(UI_GTK_OBJ:.o=.d)
 
-.PHONY: all clean format check-format compile_commands install
+.PHONY: all clean format check-format compile_commands install ui-gtk
 
 all: $(TARGET) $(UI_TARGET)
 
@@ -72,9 +72,11 @@ all: $(TARGET) $(UI_TARGET)
 $(TARGET): $(DAEMON_OBJ) $(INI_OBJ)
 	$(CC) $^ -o $@ -lpulse
 
-# UI — links with GTK4 and gtk4-layer-shell
-$(UI_TARGET): $(UI_OBJ)
-	$(CC) $^ -o $@ $(GTK_LDFLAGS)
+# GTK UI — links with GTK4 and gtk4-layer-shell
+ui-gtk: $(UI_GTK_OBJ)
+	$(CC) $^ -o $(UI_TARGET) $(GTK_LDFLAGS)
+
+$(UI_TARGET): ui-gtk
 
 # Daemon object files
 $(OBJ_DIR)/daemon/%.o: src/daemon/%.c | $(OBJ_DIR)/daemon \
@@ -83,7 +85,7 @@ $(OBJ_DIR)/daemon/%.o: src/daemon/%.c | $(OBJ_DIR)/daemon \
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # UI object files
-$(OBJ_DIR)/ui/%.o: src/ui/%.c | $(OBJ_DIR)/ui
+$(OBJ_DIR)/ui/gtk/%.o: src/ui/gtk/%.c | $(OBJ_DIR)/ui/gtk
 	$(CC) $(CFLAGS) $(GTK_CFLAGS) -MMD -MP -c $< -o $@
 
 # Shared object files (used by both daemon and UI)
@@ -95,7 +97,7 @@ $(OBJ_DIR)/third_party/inih/%.o: third_party/inih/%.c | $(OBJ_DIR)/third_party/i
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # Create output directories
-$(OBJ_DIR)/daemon $(OBJ_DIR)/daemon/utils $(OBJ_DIR)/daemon/monitors $(OBJ_DIR)/ui $(OBJ_DIR)/shared $(OBJ_DIR)/third_party/inih:
+$(OBJ_DIR)/daemon $(OBJ_DIR)/daemon/utils $(OBJ_DIR)/daemon/monitors $(OBJ_DIR)/ui/gtk $(OBJ_DIR)/shared $(OBJ_DIR)/third_party/inih:
 	mkdir -p $@
 
 # Include dependency files
@@ -123,7 +125,7 @@ compile_commands:
 		obj=$$(echo "$$src" | sed 's|src/|out/|; s|\.c$$|.o|'); \
 		printf '  {"directory":"$(CURDIR)","file":"%s","command":"gcc $(CFLAGS) -MMD -MP -c %s -o %s","output":"%s"},\n' "$$src" "$$src" "$$obj" "$$obj" >> compile_commands.json; \
 	done
-	@for src in $(filter-out src/shared/common.c src/shared/log.c,$(UI_SRC)); do \
+	@for src in $(filter-out src/shared/common.c src/shared/log.c,$(UI_GTK_SRC)); do \
 		obj=$$(echo "$$src" | sed 's|src/|out/|; s|\.c$$|.o|'); \
 		printf '  {"directory":"$(CURDIR)","file":"%s","command":"gcc $(CFLAGS) $(GTK_CFLAGS) -MMD -MP -c %s -o %s","output":"%s"},\n' "$$src" "$$src" "$$obj" "$$obj" >> compile_commands.json; \
 	done

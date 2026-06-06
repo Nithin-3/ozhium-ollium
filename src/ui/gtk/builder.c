@@ -9,12 +9,12 @@
  * builder.c - Widget building
  */
 
-#include "ui/builder.h"
+#include "ui/gtk/builder.h"
 #include "gtk/gtk.h"
 #include "gtk/gtkshortcut.h"
 #include "shared/common.h"
-#include "ui/config.h"
-#include "ui/window.h"
+#include "ui/gtk/config.h"
+#include "ui/gtk/window.h"
 #include <stdio.h>
 #include <string.h>
 
