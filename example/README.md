@@ -5,7 +5,8 @@ This directory contains example configuration and CSS files for customizing ozhi
 ## Files
 
 - `ozhium-ollium.conf`: Example configuration file for OSD settings, icons, and slider/text behavior
-- `style.css`: Example GTK4 CSS stylesheet for customizing the OSD's visual appearance
+- `ozhium-ollium.qml`: Qt6 QML template for the OSD user interface (used by the Qt backend)
+- `style.css`: Example GTK4 CSS stylesheet for customizing the OSD's visual appearance (GTK backend only)
 
 ---
 
@@ -56,6 +57,53 @@ GTK4-compatible CSS for customizing the OSD's visual appearance. The application
 - `label.title`, `label.icon`: Specialized text styles
 
 Styles follow GTK4 CSS conventions. See the [GTK4 CSS documentation](https://docs.gtk.org/gtk4/css-overview.html) for more customization options.
+
+---
+
+## QML Template (`ozhium-ollium.qml`)
+
+The QML template renders the OSD using the Qt6 Quick backend (`make UI_BACKEND=qt`). It receives values from the C++ process via QML context properties.
+
+### Context Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `argsElement` | string | `"slider"` or `"text"` — selects which layout to show |
+| `argsAction` | string | Action enum value (`"0"` … `"15"`) — mapped to an icon |
+| `argsMin` | double | Slider minimum value |
+| `argsMax` | double | Slider maximum value |
+| `argsCurrent` | double | Current slider position |
+| `argsText` | string | Text displayed in text mode |
+
+### Hardcoded Action → Icon Map
+
+The icons are Nerd Font glyphs matching the `[icons]` section of `ozhium-ollium.conf`:
+
+| Action | Config key | QML escape |
+|--------|-----------|------------|
+| 0 | `backlight` | `\uEA61` |
+| 1 | `volume` | `\uF028` |
+| 2 | `volume-mute` | `\uDB81\uDD81` |
+| 3 | `mic` | `\uDB80\uDF6C` |
+| 4 | `mic-mute` | `\uF131` |
+| 5 | `bat-crit` | `\uDB80\uDC83` |
+| 6 | `bat-low` | `\uDB84\uDEA1` |
+| 7 | `bat-full` | `\uF240` |
+| 8 | `bat-charge` | `\uDB80\uDC84` |
+| 9 | `bat-discharge` | `\uDB80\uDC7E` |
+| 10 | `bat-idel` | `\uDB80\uDC79` |
+| 11 | `wifi` | `\uF1EB` |
+| 12 | `ethernet` | `\uDB80\uDE00` |
+| 13 | `bluetooth` | `\uF293` |
+| 14 | `block` | `\uDB84\uDDF0` |
+| 15 | `hid` | `\uDB85\uDD81` |
+
+To use the example QML file:
+
+```bash
+mkdir -p ~/.config/ozhium-ollium
+cp example/ozhium-ollium.qml ~/.config/ozhium-ollium/
+```
 
 ---
 
