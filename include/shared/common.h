@@ -42,6 +42,10 @@ typedef struct {
 	ACTION action;
 } textData;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Find the full path to a configuration file
  * @param filename The name of the configuration file to locate
@@ -57,3 +61,7 @@ char *findConfigPath(const char *filename);
  * @return Newly allocated string with replacements, caller must free
  */
 char *strReplace(const char *src, const char *find, const char *replace);
+
+#ifdef __cplusplus
+}
+#endif
