@@ -38,7 +38,7 @@ Override default Nerd Font icons for system states. Available keys:
 - `backlight`, `volume`, `volume-mute`
 - `mic`, `mic-mute`
 - `bat-low`, `bat-full`, `bat-charge`, `bat-discharge`, `bat-idel`, `bat-crit`
-- `wifi`, `ethernet`, `bluetooth`
+- `wifi`, `ethernet`, `bluetooth`, `vpn`
 
 ---
 
@@ -69,7 +69,7 @@ The QML template renders the OSD using the Qt6 Quick backend (`make UI_BACKEND=q
 | Property | Type | Description |
 |----------|------|-------------|
 | `argsElement` | string | `"slider"` or `"text"` — selects which layout to show |
-| `argsAction` | string | Action enum value (`"0"` … `"15"`) — mapped to an icon |
+| `argsAction` | string | Action enum value (`"0"` … `"16"`) — mapped to an icon |
 | `argsMin` | double | Slider minimum value |
 | `argsMax` | double | Slider maximum value |
 | `argsCurrent` | double | Current slider position |
@@ -97,6 +97,7 @@ The icons are Nerd Font glyphs matching the `[icons]` section of `ozhium-ollium.
 | 13 | `bluetooth` | `\uF293` |
 | 14 | `block` | `\uDB84\uDDF0` |
 | 15 | `hid` | `\uDB85\uDD81` |
+| 16 | `vpn` | `\uDB85\uDD4A` |
 
 To use the example QML file:
 

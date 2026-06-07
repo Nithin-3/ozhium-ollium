@@ -11,11 +11,11 @@ Runtime Dependencies
 --------------------
   Daemon (ozhium-ollium):
     - libpulse-dev    (PulseAudio library)
-    - libmnl-dev     (netlink library for network/bluetooth events)
+    - libmnl-dev     (netlink library for network/bluetooth/VPN events)
 
-  UI (ozhium-ollium-ui):
-    - gtk4            (GTK+ 4.0)
-    - gtk4-layer-shell
+  UI (ozhium-ollium-ui) — choose one backend:
+    - Option A (GTK): gtk4, gtk4-layer-shell
+    - Option B (Qt):  qt6-base (qt6-base-dev), qt6-declarative (qt6-declarative-dev)
 
 System Requirements
 -------------------
@@ -28,16 +28,16 @@ Installation Examples
 ---------------------
 
   Debian/Ubuntu:
-    sudo apt install build-essential pkg-config libpulse-dev libmnl-dev libgtk-4-dev libgtk4-layer-shell-dev
+    sudo apt install build-essential pkg-config libpulse-dev libmnl-dev libgtk-4-dev libgtk4-layer-shell-dev qt6-base-dev qt6-declarative-dev
 
   Fedora/RHEL:
-    sudo dnf install gcc make pkg-config pulseaudio-libs-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel
+    sudo dnf install gcc make pkg-config pulseaudio-libs-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel qt6-qtbase-devel qt6-qtdeclarative-devel
 
   Arch Linux:
-    sudo pacman -S base-devel pkgconf pulseaudio libmnl gtk4
+    sudo pacman -S base-devel pkgconf pulseaudio libmnl gtk4 qt6-base qt6-declarative
 
   openSUSE:
-    sudo zypper install gcc make pkg-config libpulse-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel
+    sudo zypper install gcc make pkg-config libpulse-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel qt6-base-devel qt6-declarative-devel
 
 Verification
 ------------

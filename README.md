@@ -7,9 +7,10 @@ The project originally began as a simple utility focused only on brightness and 
 
 - Real-time backlight brightness monitoring and adjustment
 - Volume level monitoring and control via PulseAudio
-- Network connection monitoring
+- Network connection monitoring (Wi-Fi, Ethernet, VPN)
 - Bluetooth device monitoring
 - On-screen display (OSD) for visual feedback
+- VPN interface detection via kernel link type
 - System daemon for background operation
 - Lightweight and efficient implementation
 - Support for multiple audio devices
@@ -19,7 +20,7 @@ The project originally began as a simple utility focused only on brightness and 
 
 - Linux operating system with kernel support for:
   - inotify (file system event notification)
-  - netlink (network and bluetooth event notification)
+  - netlink (network, Bluetooth, and VPN event notification)
 - PulseAudio sound server
 - Wayland display server
 
@@ -80,6 +81,7 @@ The project consists of two main components:
 **Daemon (ozhium-ollium)**
 - Monitors backlight changes via inotify on sysfs
 - Monitors volume changes via PulseAudio
+- Detects VPN connections by parsing IFLA_INFO_KIND (tun, wireguard, openvpn, etc.)
 - Tracks battery status
 - Runs in the background as a system service
 - Uses udev for hardware event detection
@@ -94,6 +96,7 @@ The project consists of two main components:
 - change value (backlight,audio,mic)
 - need root permission
 - listen keylog
+- open port
 
 ## Building
 
@@ -135,3 +138,4 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 - [inih](https://github.com/benhoyt/inih) — INI file parser (BSD 3-Clause)
 - [GTK4](https://gtk.org/) — UI toolkit (LGPL-2.1+)
+- [Qt6](https://www.qt.io/) — UI toolkit (GPL-3.0 / LGPL-3.0)

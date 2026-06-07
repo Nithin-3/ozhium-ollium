@@ -31,7 +31,8 @@ Window {
         12: "\uDB80\uDE00",
         13: "\uF293",
         14: "\uDB84\uDDF0",
-        15: "\uDB85\uDD81"
+        15: "\uDB85\uDD81",
+        16: "\uDB85\uDD4A"
     })
 
     function iconFor(action) {
