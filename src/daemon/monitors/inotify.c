@@ -10,9 +10,6 @@
  */
 
 #include "daemon/monitors/inotify.h"
-#include "daemon/invoke.h"
-#include "daemon/utils/backlight.h"
-#include "shared/common.h"
 #include "shared/log.h"
 #include <errno.h>
 #include <stdio.h>
@@ -21,7 +18,6 @@
 #include <unistd.h>
 
 static int in_fd = -1;
-static int bri_wd = -1;
 
 static void inotifyCb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_flags_t events, void *ud) {
 	(void)api;
@@ -36,11 +32,6 @@ static void inotifyCb(pa_mainloop_api *api, pa_io_event *e, int fd, pa_io_event_
 	for (char *p = buf; p < buf + len;) {
 		struct inotify_event *ev = (struct inotify_event *)p;
 		if (ev->mask & IN_MODIFY) {
-			if (ev->wd == bri_wd) {
-				sliderData slider;
-				if (0 == getBacklight(&slider))
-					execUI(BACKLIGHT, &slider);
-			}
 		}
 		p += sizeof(struct inotify_event) + ev->len;
 	}
@@ -53,20 +44,6 @@ int initInotify(pa_mainloop_api *api) {
 		return -1;
 	}
 
-	if (getBacklightPaths(bri_path, max_path, PATH_MAX)) {
-		logInfo("could not find backlight path");
-	} else {
-		bri_wd = inotify_add_watch(in_fd, bri_path, IN_MODIFY);
-		if (bri_wd < 0) {
-			logError("inotify watch: %s", strerror(errno));
-			close(in_fd);
-			in_fd = -1;
-			return -1;
-		}
-		logInfo("[inotify watch] path: %s", bri_path);
-	}
-
-	api->io_new(api, in_fd, PA_IO_EVENT_INPUT, inotifyCb, NULL);
 	return 0;
 }
 
@@ -75,5 +52,4 @@ void cleanupInotify(void) {
 		close(in_fd);
 		in_fd = -1;
 	}
-	bri_wd = -1;
 }

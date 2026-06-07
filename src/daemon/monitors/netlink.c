@@ -10,12 +10,14 @@
  */
 
 #include "daemon/monitors/netlink.h"
+#include "daemon/utils/backlight.h"
 #include "daemon/utils/battery.h"
 #include "daemon/invoke.h"
 #include "shared/common.h"
 #include "shared/log.h"
 #include <asm/types.h>
 #include <errno.h>
+#include <linux/limits.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <linux/if_arp.h>
@@ -111,6 +113,7 @@ void ueventRecv(int fd) {
 	char subsystem[32] = { 0 };
 	char power_supply_type[8] = { 0 };
 	char name[128] = { 0 };
+	char devPath[PATH_MAX] = { 0 };
 	unsigned int power_supply_capacity;
 	struct input_id {
 		unsigned int bus;
@@ -127,6 +130,8 @@ void ueventRecv(int fd) {
 			strncpy(action, p + 7, sizeof(action) - 1);
 		else if (strncmp(p, "SUBSYSTEM=", 10) == 0)
 			strncpy(subsystem, p + 10, sizeof(subsystem) - 1);
+		else if (strncmp(p, "DEVPATH=", 8) == 0)
+			snprintf(devPath, sizeof(devPath), "/sys%s", p + 8);
 		else if (strncmp(p, "DEVNAME=", 8) == 0)
 			strncpy(name, p + 8, sizeof(name) - 1);
 		else if (strncmp(p, "NAME=", 5) == 0)
@@ -139,23 +144,22 @@ void ueventRecv(int fd) {
 			sscanf(p + 22, "%u", &power_supply_capacity);
 		else if (strncmp(p, "PRODUCT=", 8) == 0)
 			sscanf(p + 8, "%x/%x/%x/%x", &product.bus, &product.vendor, &product.product, &product.version);  // NOTE: input event -> bus/vendor/product/version : these are the value PRODUCT= have
-		// logDebug("%s", p);
+		logDebug("%s", p);
 		p += strlen(p) + 1;
 	}
 	// logDebug("");
 
-	// if (0 == strcmp(subsystem, "bluetooth")) {
-	// 	textData t = {0};
-	// 	t.action = BLUETOOTH;
-	// 	snprintf(t.text, sizeof(t.text), "bluetooth %s", action);
-	// 	execUI(TEXT, &t);
-	// 	return;
-	// }
+	if (0 == strcmp(action, "change") && 0 == strcmp(subsystem, "backlight")) {
+		sliderData s = { 0 };
+		getBacklight(&s, devPath);
+		execUI(BACKLIGHT, &s);
+		return;
+	}
 
 	if (0 == strcmp(subsystem, "power_supply") && 0 == strcmp(action, "change") && 0 == strcmp(power_supply_type, "Battery")) {
 		sleep(1);
 		textData t = { 0 };
-		getBattery(&t);
+		getBattery(&t, devPath);
 		if (t.action == act)
 			return;
 		act = t.action;
@@ -252,8 +256,10 @@ int initNetlink(pa_mainloop_api *api) {
 		uevent_fd = -1;
 		return -1;
 	}
+	char devPath[PATH_MAX] = { 0 };
 	textData t = { 0 };
-	getBattery(&t);
+	if (findBatteryPath(devPath, sizeof(devPath)) == 0)
+		getBattery(&t, devPath);
 	act = t.action;
 
 	uevent_io = api->io_new(api, uevent_fd, PA_IO_EVENT_INPUT, ueventCb, NULL);

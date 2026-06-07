@@ -9,47 +9,47 @@
  * battery.c - Battery monitoring
  */
 
-#include "daemon/utils/battery.h"
-#include "shared/common.h"
 #include "daemon/utils/tool.h"
 #include <dirent.h>
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
 
-static char bat_sta_path[PATH_MAX] = { 0 };
-static char bat_cap_path[PATH_MAX] = { 0 };
 
-int getBatteryPaths(char *cap, char *sta, size_t sz) {
-	DIR *d = opendir("/sys/class/power_supply/");
+int findBatteryPath(char *buf, size_t len) {
+	DIR *d = opendir("/sys/class/power_supply");
 	if (!d)
-		return -1;
+		return 1;
 	struct dirent *de;
 	while ((de = readdir(d))) {
-		if (strncmp(de->d_name, "BAT", 3) != 0)
+		if (de->d_name[0] == '.')
 			continue;
-		if (cap)
-			snprintf(cap, sz, "/sys/class/power_supply/%s/capacity", de->d_name);
-		if (sta)
-			snprintf(sta, sz, "/sys/class/power_supply/%s/status", de->d_name);
-		closedir(d);
-		return 0;
+		char typePath[PATH_MAX];
+		snprintf(typePath, sizeof(typePath), "/sys/class/power_supply/%s/type", de->d_name);
+		char type[16];
+		if (catFileStr(typePath, type, sizeof(type)) && strcmp(type, "Battery") == 0) {
+			snprintf(buf, len, "/sys/class/power_supply/%s", de->d_name);
+			closedir(d);
+			return 0;
+		}
 	}
 	closedir(d);
 	return 1;
 }
 
-int getBattery(textData *t) {
-	if (bat_sta_path[0] == '\0') {
-		if (getBatteryPaths(bat_cap_path, bat_sta_path, PATH_MAX))
-			return 1;
-	}
+int getBattery(textData *t, char *path) {
+
+	char batCapPath[strlen(path) + strlen("/capacity") + 1];
+	char batStaPath[strlen(path) + strlen("/status") + 1];
+
+	snprintf(batCapPath, sizeof(batCapPath), "%s/capacity", path);
+	snprintf(batStaPath, sizeof(batStaPath), "%s/status", path);
 
 	int cap;
 	char buff[32];
-	if (!catFile(bat_cap_path, &cap))
+	if (!catFile(batCapPath, &cap))
 		return 1;
-	if (!catFileStr(bat_sta_path, buff, sizeof(buff)))
+	if (!catFileStr(batStaPath, buff, sizeof(buff)))
 		return 1;
 
 	snprintf(t->text, sizeof(t->text), "%d%%", cap);
