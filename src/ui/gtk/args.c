@@ -54,6 +54,8 @@ ACTION argToAction(const char *s) {
 		return BLOCK;
 	if (strcmp(s, "t10") == 0 || strcmp(s, "hid") == 0)
 		return HID;
+	if (strcmp(s, "t11") == 0 || strcmp(s, "vpn") == 0)
+		return VPN;
 	return INVALID;
 }
 

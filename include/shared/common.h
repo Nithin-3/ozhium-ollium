@@ -28,7 +28,8 @@ typedef enum { INVALID = -1,
 	       ETHERNET,
 	       BLUETOOTH,
 	       BLOCK,
-	       HID } ACTION;
+	       HID,
+	       VPN } ACTION;
 
 typedef struct {
 	float min;

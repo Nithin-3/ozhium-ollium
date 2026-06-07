@@ -74,6 +74,8 @@ static const char *actionToName(ACTION a) {
 			return "block";
 		case HID:
 			return "hid";
+		case VPN:
+			return "vpn";
 		default:
 			return "invalid";
 	}
@@ -213,6 +215,7 @@ char **daemonNativeExec(ACTION a, void *data) {
 		case BLUETOOTH:
 		case BLOCK:
 		case HID:
+		case VPN:
 		case INVALID: {
 			textData *t = (textData *)data;
 			char actionBuf[32];
@@ -252,6 +255,7 @@ char **daemonExec(ACTION a, void *data) {
 			case BLUETOOTH:
 			case BLOCK:
 			case HID:
+			case VPN:
 			case INVALID: {
 				textData *t = (textData *)data;
 				for (int i = 1; cmd[i] != NULL; i++)

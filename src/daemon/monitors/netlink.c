@@ -38,11 +38,19 @@ static pa_mainloop_api *netlink_api = NULL;
 static uint32_t prev_flags[MAX_INTERFACES] = { 0 };
 static ACTION act = INVALID;
 
-int is_wifi(const char *ifname) {
+static int is_wifi(const char *ifname) {
 	char path[256];
 	snprintf(path, sizeof(path), "/sys/class/net/%s/phy80211", ifname);
 	struct stat st;
 	return stat(path, &st) == 0;
+}
+
+static int is_vpn_kind(const char *kind) {
+	static const char *vpn_types[] = { "tun", "tap", "wireguard", "openvpn", "vti", "vti6", "gre", "gretap", "ipip", "sit", "ip6tnl", "ip6gre", "ip6gretap", "l2tp", "ppp" };
+	for (size_t i = 0; i < sizeof(vpn_types) / sizeof(vpn_types[0]); i++)
+		if (strcmp(kind, vpn_types[i]) == 0)
+			return 1;
+	return 0;
 }
 
 void netlinkRecv(int fd) {
@@ -75,27 +83,50 @@ void netlinkRecv(int fd) {
 				nlh = NLMSG_NEXT(nlh, len);
 				continue;
 			}
+
+			char *ifname = NULL;
+			char *kind = NULL;
 			struct rtattr *rta = IFLA_RTA(ifi);
 			int rtl = IFLA_PAYLOAD(nlh);
 			while (RTA_OK(rta, rtl)) {
-				if (rta->rta_type == IFLA_IFNAME) {
-					char *ifname = (char *)RTA_DATA(rta);
-					const char *state = now_connected ? "connected" : "disconnected";
-					if (is_wifi(ifname)) {
-						textData t = { 0 };
-						t.action = WIFI;
-						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
-						logInfo("[netlink] net: %s", t.text);
-						execUI(WIFI, &t);
-					} else if (ifi->ifi_type == ARPHRD_ETHER) {
-						textData t = { 0 };
-						t.action = ETHERNET;
-						snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
-						logInfo("[netlink] net: %s", t.text);
-						execUI(ETHERNET, &t);
+				if (rta->rta_type == IFLA_IFNAME)
+					ifname = (char *)RTA_DATA(rta);
+				else if (rta->rta_type == IFLA_LINKINFO) {
+					struct rtattr *rta_info = (struct rtattr *)RTA_DATA(rta);
+					int rtl_info = RTA_PAYLOAD(rta);
+					while (RTA_OK(rta_info, rtl_info)) {
+						if (rta_info->rta_type == IFLA_INFO_KIND) {
+							kind = (char *)RTA_DATA(rta_info);
+							break;
+						}
+						rta_info = RTA_NEXT(rta_info, rtl_info);
 					}
 				}
 				rta = RTA_NEXT(rta, rtl);
+			}
+
+			if (!ifname) {
+				nlh = NLMSG_NEXT(nlh, len);
+				continue;
+			}
+
+			const char *state = now_connected ? "connected" : "disconnected";
+			textData t = { 0 };
+			if (is_wifi(ifname)) {
+				t.action = WIFI;
+				snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
+				logInfo("[netlink] net: %s", t.text);
+				execUI(WIFI, &t);
+			} else if (kind && is_vpn_kind(kind)) {
+				t.action = VPN;
+				snprintf(t.text, sizeof(t.text), "%s %s %s", kind, ifname, state);
+				logInfo("[netlink] net: %s", t.text);
+				execUI(VPN, &t);
+			} else if (ifi->ifi_type == ARPHRD_ETHER) {
+				t.action = ETHERNET;
+				snprintf(t.text, sizeof(t.text), "%s %s", ifname, state);
+				logInfo("[netlink] net: %s", t.text);
+				execUI(ETHERNET, &t);
 			}
 		}
 		nlh = NLMSG_NEXT(nlh, len);
@@ -144,7 +175,7 @@ void ueventRecv(int fd) {
 			sscanf(p + 22, "%u", &power_supply_capacity);
 		else if (strncmp(p, "PRODUCT=", 8) == 0)
 			sscanf(p + 8, "%x/%x/%x/%x", &product.bus, &product.vendor, &product.product, &product.version);  // NOTE: input event -> bus/vendor/product/version : these are the value PRODUCT= have
-		logDebug("%s", p);
+		// logDebug("%s", p);
 		p += strlen(p) + 1;
 	}
 	// logDebug("");

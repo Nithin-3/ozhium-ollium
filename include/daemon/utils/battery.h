@@ -21,4 +21,3 @@
 int getBattery(textData *t, char *path);
 
 int findBatteryPath(char *buf, size_t len);
-

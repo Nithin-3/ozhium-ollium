@@ -14,11 +14,9 @@
 #include <linux/limits.h>
 #include <stddef.h>
 
-
 /**
  * @brief Get current backlight brightness
  * @param s Pointer to sliderData to store the result
  * @return 0 on success, non-zero on failure
  */
-int getBacklight(sliderData *s,char *path);
-
+int getBacklight(sliderData *s, char *path);

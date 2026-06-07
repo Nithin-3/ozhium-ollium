@@ -42,6 +42,7 @@ Icons icons = {
 	.bluetooth = "",
 	.block = "󱇰",
 	.hid = "󱖁",
+	.vpn = "󰖂",
 };
 
 SliderConfig sliderConfig = {
@@ -131,6 +132,8 @@ static int configHandler(void *user, const char *section, const char *name, cons
 			icons.block = strdup(value);
 		else if (strcmp(name, "hid") == 0)
 			icons.hid = strdup(value);
+		else if (strcmp(name, "vpn") == 0)
+			icons.vpn = strdup(value);
 	}
 
 	return 1;

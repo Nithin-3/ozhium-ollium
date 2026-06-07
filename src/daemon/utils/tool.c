@@ -89,6 +89,8 @@ const char *actionToString(ACTION a) {
 			return "t9";
 		case HID:
 			return "t10";
+		case VPN:
+			return "t11";
 		default:
 			return "?";
 	}

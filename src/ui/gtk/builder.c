@@ -196,6 +196,8 @@ char *getIconForAction(ACTION action) {
 			return icons.block;
 		case HID:
 			return icons.hid;
+		case VPN:
+			return icons.vpn;
 		default:
 			return " ";
 	}

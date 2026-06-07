@@ -16,7 +16,7 @@ struct UiHandler;
 
 class DBusShim : public QDBusVirtualObject {
 public:
-	explicit DBusShim(UiHandler *handler, QObject *parent = nullptr);
+	explicit DBusShim(UiHandler * handler, QObject *parent = nullptr);
 
 	bool handleMessage(const QDBusMessage &msg, const QDBusConnection &conn) override;
 	QString introspect(const QString &path) const override;

@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 int findBatteryPath(char *buf, size_t len) {
 	DIR *d = opendir("/sys/class/power_supply");
 	if (!d)
@@ -38,7 +37,6 @@ int findBatteryPath(char *buf, size_t len) {
 }
 
 int getBattery(textData *t, char *path) {
-
 	char batCapPath[strlen(path) + strlen("/capacity") + 1];
 	char batStaPath[strlen(path) + strlen("/status") + 1];
 
