@@ -75,7 +75,7 @@ UI_GTK_OBJ = $(UI_GTK_SRC:src/%.c=$(OBJ_DIR)/%.o) $(INI_OBJ)
 QT_UI_OBJ  = $(QT_UI_SRC:src/%.cpp=$(OBJ_DIR)/%.o) $(OBJ_DIR)/shared/common.o $(OBJ_DIR)/shared/log.o $(INI_OBJ)
 
 # Auto-generate dependency files
-DEPS = $(DAEMON_OBJ:.o=.d) $(UI_GTK_OBJ:.o=.d)
+DEPS = $(DAEMON_OBJ:.o=.d) $(UI_GTK_OBJ:.o=.d) $(QT_UI_OBJ:.o=.d)
 
 .PHONY: all clean format check-format compile_commands install ui-gtk ui-qt $(UI_TARGET)
 
@@ -153,6 +153,7 @@ install: all
 	install -m 0755 $(UI_TARGET) $(DESTDIR)$(PREFIX)/bin/$(UI_TARGET)
 	install -m 0644 example/ozhium-ollium.conf $(DESTDIR)$(PREFIX)/share/ozhium-ollium/
 	install -m 0644 example/style.css $(DESTDIR)$(PREFIX)/share/ozhium-ollium/
+	install -m 0644 example/ozhium-ollium.qml $(DESTDIR)$(PREFIX)/share/ozhium-ollium/
 
 compile_commands:
 	@printf '[\n' > compile_commands.json
