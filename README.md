@@ -1,12 +1,12 @@
 # ozhium-ollium
 
-ozhium-ollium is a Linux daemon that monitors system events and displays a configurable GTK4 overlay UI for real-time feedback.
+ozhium-ollium is a Linux daemon that monitors system events and displays a configurable OSD (On-Screen Display) UI for real-time feedback.
 The project originally began as a simple utility focused only on brightness and audio level changes — reflected in its name: “ozhium” (Tamil-inspired for light) and “ollium” (Tamil-inspired for sound). As the project evolved, support expanded to battery, network, Bluetooth, and other system events, while retaining the original name that represented its beginnings.
 
 ## Features
 
-- Real-time backlight brightness monitoring and adjustment
-- Volume level monitoring and control via PulseAudio
+- Real-time backlight brightness monitoring
+- Volume level monitoring and control via PulseAudio/PipeWire (pipewire-pulse)
 - Network connection monitoring (Wi-Fi, Ethernet, VPN)
 - Bluetooth device monitoring
 - On-screen display (OSD) for visual feedback
@@ -21,26 +21,84 @@ The project originally began as a simple utility focused only on brightness and 
 - Linux operating system with kernel support for:
   - inotify (file system event notification)
   - netlink (network, Bluetooth, and VPN event notification)
-- PulseAudio sound server
-- Wayland display server
+- PulseAudio sound server (or PipeWire with pipewire-pulse)
+- Wayland display server (required for GTK; optional for Qt)
 
 ## Dependencies
 
 Before building, install the required dependencies for your distribution.
+Choose packages based on your audio system (PulseAudio or PipeWire) and UI toolkit (GTK or Qt).
+
+**Note:** The daemon uses the PulseAudio C API (`libpulse`), so the build dependency is always
+`libpulse-dev` — even when using PipeWire at runtime via the `pipewire-pulse` compat layer.
 
 ### Ubuntu/Debian
+
+**Daemon (build deps — works with both PulseAudio and PipeWire at runtime):**
 ```bash
-sudo apt-get install build-essential pkg-config libpulse-dev libudev-dev libgtk-4-dev libgtk-layer-shell-0-dev
+sudo apt-get install build-essential pkg-config libpulse-dev libudev-dev
+```
+
+**Runtime audio server — choose one:**
+```bash
+sudo apt-get install pulseaudio          # PulseAudio
+sudo apt-get install pipewire pipewire-pulse  # PipeWire
+```
+
+**UI — GTK4 backend:**
+```bash
+sudo apt-get install libgtk-4-dev libgtk-layer-shell-0-dev
+```
+
+**UI — Qt6 backend:**
+```bash
+sudo apt-get install qt6-base-dev qt6-declarative-dev
 ```
 
 ### Fedora/RHEL
+
+**Daemon (build deps):**
 ```bash
-sudo dnf install gcc pkg-config pulseaudio-libs-devel systemd-devel gtk4-devel gtk4-layer-shell-devel
+sudo dnf install gcc pkg-config pulseaudio-libs-devel systemd-devel
+```
+
+**Runtime audio server — choose one:**
+```bash
+sudo dnf install pulseaudio                 # PulseAudio
+sudo dnf install pipewire pipewire-pulseaudio  # PipeWire
+```
+
+**UI — GTK4 backend:**
+```bash
+sudo dnf install gtk4-devel gtk4-layer-shell-devel
+```
+
+**UI — Qt6 backend:**
+```bash
+sudo dnf install qt6-qtbase-devel qt6-qtdeclarative-devel
 ```
 
 ### Arch Linux
+
+**Daemon (build deps):**
 ```bash
-sudo pacman -S base-devel pulseaudio gtk4 gtk4-layer-shell
+sudo pacman -S base-devel pulseaudio
+```
+
+**Runtime audio server — choose one:**
+```bash
+sudo pacman -S pulseaudio             # PulseAudio
+sudo pacman -S pipewire pipewire-pulse  # PipeWire
+```
+
+**UI — GTK4 backend:**
+```bash
+sudo pacman -S gtk4 gtk4-layer-shell
+```
+
+**UI — Qt6 backend:**
+```bash
+sudo pacman -S qt6-base qt6-declarative
 ```
 
 For more details, see the [DEPENDENCIES](DEPENDENCIES) file.
@@ -73,7 +131,7 @@ Run the daemon:
 ```bash
 ./ozhium-ollium
 ```
-
+---
 ## How It Works
 
 The project consists of two main components:
@@ -89,7 +147,6 @@ The project consists of two main components:
 **UI (ozhium-ollium-ui)**
 - Displays visual feedback for brightness and volume changes
 - Renders on-screen display (OSD) notifications
-- Uses GTK4 and gtk4-layer-shell for window rendering
 - Receives callbacks from the daemon
 
 ## It Is Not
@@ -98,6 +155,7 @@ The project consists of two main components:
 - listen keylog
 - open port
 
+---
 ## Building
 
 To build both the daemon and UI:
@@ -132,7 +190,7 @@ When using or modifying this code, you must include the original license and att
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+Contributions are welcome! feel free to submit pull requests or open issues for bugs and feature requests.
 
 ## Third Party Libraries
 

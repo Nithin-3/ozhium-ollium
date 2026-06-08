@@ -6,38 +6,89 @@ Build Dependencies
   - GCC or Clang compiler
   - pkg-config
   - make
+  - libpulse-dev     (PulseAudio C API — used even with PipeWire via pipewire-pulse)
+  - libmnl-dev       (netlink library for network/bluetooth/VPN events)
+  - libudev-dev      (udev for hardware event detection)
 
 Runtime Dependencies
 --------------------
-  Daemon (ozhium-ollium):
-    - libpulse-dev    (PulseAudio library)
-    - libmnl-dev     (netlink library for network/bluetooth/VPN events)
+  Audio server (choose one):
+    - pulseaudio                 (PulseAudio sound server)
+    - pipewire + pipewire-pulse  (PipeWire with PulseAudio compat layer)
 
   UI (ozhium-ollium-ui) — choose one backend:
-    - Option A (GTK): gtk4, gtk4-layer-shell
-    - Option B (Qt):  qt6-base (qt6-base-dev), qt6-declarative (qt6-declarative-dev)
+    - Option A (GTK):  gtk4, gtk4-layer-shell
+    - Option B (Qt):   qt6-base, qt6-declarative
 
 System Requirements
 -------------------
   - Linux kernel with inotify and netlink support
-  - PulseAudio sound server
+  - PulseAudio sound server (or pipewire-pulse for PipeWire)
   - /sys/class/backlight/    (backlight device paths)
   - /sys/class/power_supply/ (battery device paths)
 
 Installation Examples
 ---------------------
 
-  Debian/Ubuntu:
-    sudo apt install build-essential pkg-config libpulse-dev libmnl-dev libgtk-4-dev libgtk4-layer-shell-dev qt6-base-dev qt6-declarative-dev
+### Ubuntu/Debian
 
-  Fedora/RHEL:
-    sudo dnf install gcc make pkg-config pulseaudio-libs-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel qt6-qtbase-devel qt6-qtdeclarative-devel
+**Daemon (build deps):**
+  sudo apt install build-essential pkg-config libpulse-dev libmnl-dev libudev-dev
 
-  Arch Linux:
-    sudo pacman -S base-devel pkgconf pulseaudio libmnl gtk4 qt6-base qt6-declarative
+**Runtime audio server — choose one:**
+  sudo apt install pulseaudio                    # PulseAudio
+  sudo apt install pipewire pipewire-pulse       # PipeWire
 
-  openSUSE:
-    sudo zypper install gcc make pkg-config libpulse-devel libmnl-devel gtk4-devel gtk4-layer-shell-devel qt6-base-devel qt6-declarative-devel
+**UI — GTK4 backend:**
+  sudo apt install libgtk-4-dev libgtk4-layer-shell-dev
+
+**UI — Qt6 backend:**
+  sudo apt install qt6-base-dev qt6-declarative-dev
+
+### Fedora/RHEL
+
+**Daemon (build deps):**
+  sudo dnf install gcc make pkg-config pulseaudio-libs-devel libmnl-devel systemd-devel
+
+**Runtime audio server — choose one:**
+  sudo dnf install pulseaudio                        # PulseAudio
+  sudo dnf install pipewire pipewire-pulseaudio      # PipeWire
+
+**UI — GTK4 backend:**
+  sudo dnf install gtk4-devel gtk4-layer-shell-devel
+
+**UI — Qt6 backend:**
+  sudo dnf install qt6-qtbase-devel qt6-qtdeclarative-devel
+
+### Arch Linux
+
+**Daemon (build deps):**
+  sudo pacman -S base-devel pkgconf pulseaudio libmnl
+
+**Runtime audio server — choose one:**
+  sudo pacman -S pulseaudio                  # PulseAudio
+  sudo pacman -S pipewire pipewire-pulse     # PipeWire
+
+**UI — GTK4 backend:**
+  sudo pacman -S gtk4 gtk4-layer-shell
+
+**UI — Qt6 backend:**
+  sudo pacman -S qt6-base qt6-declarative
+
+### openSUSE
+
+**Daemon (build deps):**
+  sudo zypper install gcc make pkg-config libpulse-devel libmnl-devel
+
+**Runtime audio server — choose one:**
+  sudo zypper install pulseaudio                  # PulseAudio
+  sudo zypper install pipewire pipewire-pulseaudio # PipeWire
+
+**UI — GTK4 backend:**
+  sudo zypper install gtk4-devel gtk4-layer-shell-devel
+
+**UI — Qt6 backend:**
+  sudo zypper install qt6-base-devel qt6-declarative-devel
 
 Verification
 ------------
