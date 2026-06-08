@@ -115,7 +115,11 @@ Window {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: Number(argsCurrent).toFixed(0) + "%"
+                text: {
+                    var range = argsMax - argsMin;
+                    if (range <= 0) return "0%";
+                    return Math.round((argsCurrent - argsMin) / range * 100) + "%";
+                }
                 color: "#f0f0f0"
                 font.pixelSize: 18
                 font.family: "monospace"

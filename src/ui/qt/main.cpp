@@ -15,11 +15,13 @@
 #include "ui/qt/dbusshim.h"
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QDBusMessage>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QTimer>
 #include <QUrl>
+#include <QWindow>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -45,9 +47,11 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	QDBusInterface iface("com.ozhium.ollium.ui", "/UiHandler", "com.ozhium.ollium.ui", QDBusConnection::sessionBus()); if (iface.isValid()) {
-		iface.call("updateUI", (int)args.element, (int)args.action, (double)args.min, (double)args.max, (double)args.current, QString::fromUtf8(args.text)); 
-		return 0;
+	QDBusInterface iface("com.ozhium.ollium.ui", "/UiHandler", "com.ozhium.ollium.ui", QDBusConnection::sessionBus());
+	if (iface.isValid()) {
+		QDBusMessage reply = iface.call("updateUI", (int)args.element, (int)args.action, (double)args.min, (double)args.max, (double)args.current, QString::fromUtf8(args.text));
+		if (reply.type() != QDBusMessage::ErrorMessage)
+			return 0;
 	}
 
 	qputenv("QT_QPA_PLATFORM", "xcb");
@@ -83,19 +87,24 @@ int main(int argc, char *argv[]) {
 
 	auto *timer = new QTimer(&app);
 	timer->setSingleShot(true);
-	QObject::connect(timer, &QTimer::timeout, &app, &QGuiApplication::quit);
+	QObject::connect(timer, &QTimer::timeout, &app, [&engine]() {
+		auto objs = engine.rootObjects();
+		if (!objs.isEmpty()) {
+			if (auto *w = qobject_cast<QWindow *>(objs.first()))
+				w->setVisible(false);
+		}
+	});
 	timer->start(cfg.timeoutMs);
 
 	UiHandler handler;
-	handler.setTarget(ctx, timer, cfg.timeoutMs);
+	handler.setTarget(ctx, timer, cfg.timeoutMs, &engine);
 
 	auto *shim = new DBusShim(&handler, &app);
 
 	QDBusConnection bus = QDBusConnection::sessionBus();
-	if (!bus.registerService("com.ozhium.ollium.ui")) {
-		fprintf(stderr, "warning: DBus service name taken\n");
-	}
 	bus.registerObject("/UiHandler", shim);
+	if (!bus.registerService("com.ozhium.ollium.ui"))
+		fprintf(stderr, "warning: DBus service name taken\n");
 
 	return app.exec();
 }
